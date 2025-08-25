@@ -1,0 +1,280 @@
+<!--------------------------------
+ - @Author: Ronnie Zhang
+ - @LastEditor: Ronnie Zhang
+ - @LastEditTime: 2023/12/04 22:51:42
+ - @Email: zclzone@outlook.com
+ - Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
+ --------------------------------->
+<template>
+  <AppCard v-if="$slots.default" bordered bg="#fafafc dark:black" class="mb-30 min-h-60 rounded-4">
+    <form class="flex justify-between p-10" @submit.prevent="handleSearch()">
+      <n-scrollbar x-scrollable>
+        <n-space :wrap="!expand || isExpanded" :size="[32, 16]" class="p-10">
+          <slot />
+        </n-space>
+      </n-scrollbar>
+      <div class="flex flex-shrink-0 items-center p-10">
+        <NButton ghost type="primary" @click="handleReset">
+          <i class="i-fe:rotate-ccw mr-4" />
+          重置
+        </NButton>
+        <NButton attr-type="submit" class="ml-20" type="primary">
+          <i class="i-fe:search mr-4" />
+          搜索
+        </NButton>
+        <n-icon class="ml-4 cursor-pointer p-2 transition-all duration-200 hover:bg-gray-100 hover:text-primary" size="25">
+          <i :class="showTable ? 'i-me:xicon-card' : 'i-me:xicon-table'" @click="showTable = !showTable" />
+        </n-icon>
+        <template v-if="expand">
+          <NButton v-if="!isExpanded" type="primary" text @click="toggleExpand">
+            <i class="i-fe:chevrons-down ml-4" />
+            展开
+          </NButton>
+          <NButton v-else text type="primary" @click="toggleExpand">
+            <i class="i-fe:chevrons-up ml-4" />
+            收起
+          </NButton>
+        </template>
+      </div>
+    </form>
+  </AppCard>
+
+  <NDataTable
+    v-show="showTable"
+    :remote="remote"
+    :loading="loading"
+    :scroll-x="scrollX"
+    :max-height="maxHeight"
+    :columns="columns"
+    :data="tableData"
+    :row-key="(row) => row[rowKey]"
+    :pagination="isPagination ? pagination : false"
+    @update:checked-row-keys="onChecked"
+    @update:page="onPageChange"
+  />
+
+  <NFlex v-if="!showTable" vertical align="stretch" class="h-100%">
+    <NFlex inline size="large" class="overflow-auto">
+      <NCard v-for="(row) in tableData" :key="row._key" size="small" hoverable class="n-card-custom max-h-400 max-w-30% min-w-15% overflow-y-auto border-r-8">
+        {{ row._key }}
+        <n-list hoverable clickable show-divider>
+          <n-list-item v-for="column in columns" :key="column.key">
+            <span class="inline-block w-70px">{{ column.title }}</span>
+            <span class="vertical-mid">
+              <template v-if="column.render">
+                <template v-if="Array.isArray(column.render(row))">
+                  <template v-for="(vnode, index) in column.render(row)" :key="column.key + row._key + index">
+                    <component :is="vnode" />
+                  </template>
+                </template>
+                <template v-else-if="isVNode(column.render(row))">
+                  <component :is="column.render(row)" />
+                </template>
+                <template v-else>
+                  {{ column.render(row) }}
+                </template>
+              </template>
+              <template v-else>
+                {{ row[column.key] }}
+              </template>
+            </span>
+          </n-list-item>
+        </n-list>
+      </NCard>
+    </NFlex>
+
+    <n-pagination class="w-full justify-end" :page-count="5" />
+  </NFlex>
+</template>
+
+<script setup>
+import { utils, writeFile } from 'xlsx'
+import { nanoid } from 'nanoid'
+
+const props = defineProps({
+  /**
+   * @remote true: 后端分页  false： 前端分页
+   */
+  remote: {
+    type: Boolean,
+    default: true,
+  },
+  /**
+   * @isPagination 是否分页
+   */
+  isPagination: {
+    type: Boolean,
+    default: true,
+  },
+  scrollX: {
+    type: Number,
+    default: 1200,
+  },
+  maxHeight: {
+    type: Number,
+    default: 500,
+  },
+  rowKey: {
+    type: String,
+    default: 'id',
+  },
+  columns: {
+    type: Array,
+    required: true,
+  },
+  /** queryBar中的参数 */
+  queryItems: {
+    type: Object,
+    default() {
+      return {}
+    },
+  },
+  /**
+   * ! 约定接口入参出参
+   * 分页模式需约定分页接口入参
+   *    @pageSize 分页参数：一页展示多少条，默认10
+   *    @pageNo   分页参数：页码，默认1
+   * 需约定接口出参
+   *    @pageData 分页模式必须,非分页模式如果没有pageData则取上一层data
+   *    @total    分页模式必须，非分页模式如果没有total则取上一层data.length
+   */
+  getData: {
+    type: Function,
+    required: true,
+  },
+  /** 是否支持展开 */
+  expand: Boolean,
+})
+const emit = defineEmits(['update:queryItems', 'onChecked', 'onDataChange'])
+const loading = ref(false)
+const initQuery = { ...props.queryItems }
+const tableData = ref([])
+const pagination = reactive({
+  page: 1,
+  pageSize: 10,
+  pageSizes: [5, 10, 20, 30, 40, 50, 100],
+  showSizePicker: true,
+  showQuickJumper: true,
+  displayOrder: ['pages', 'quick-jumper', 'size-picker'],
+  prefix({ itemCount }) {
+    return `共 ${itemCount} 条数据`
+  },
+  onChange: (page) => {
+    pagination.page = page
+  },
+  onUpdatePageSize: (pageSize) => {
+    pagination.pageSize = pageSize
+    handleSearch()
+  },
+})
+
+// 是否展开
+const isExpanded = ref(false)
+
+function toggleExpand() {
+  isExpanded.value = !isExpanded.value
+}
+
+async function handleQuery() {
+  try {
+    loading.value = true
+    let paginationParams = {}
+    // 如果非分页模式或者使用前端分页,则无需传分页参数
+    if (props.isPagination && props.remote) {
+      paginationParams = { pageNo: pagination.page, pageSize: pagination.pageSize }
+    }
+    const res = await props.getData({
+      ...props.queryItems,
+      ...paginationParams,
+    })
+    // 判断使用后端分页还是前端分页
+    tableData.value = res.result?.records || res.result
+    pagination.itemCount = res.result.total ?? res.result.length
+    if (pagination.itemCount && !tableData.value.length && pagination.page > 1) {
+      // 如果当前页数据为空，且总条数不为0，则返回上一页数据
+      onPageChange(pagination.page - 1)
+    }
+    for (const valueElement of tableData.value) {
+      valueElement._key = nanoid()
+    }
+  }
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  catch (error) {
+    tableData.value = []
+    pagination.itemCount = 0
+  }
+  finally {
+    emit('onDataChange', tableData.value)
+    loading.value = false
+  }
+}
+
+function handleSearch(keepCurrentPage = false) {
+  if (keepCurrentPage) {
+    handleQuery()
+  }
+  else {
+    onPageChange(1)
+  }
+}
+async function handleReset() {
+  const queryItems = { ...props.queryItems }
+  for (const key in queryItems) {
+    queryItems[key] = null
+  }
+  emit('update:queryItems', { ...queryItems, ...initQuery })
+  await nextTick()
+  pagination.page = 1
+  handleQuery()
+}
+function onPageChange(currentPage) {
+  pagination.page = currentPage
+  if (props.remote) {
+    handleQuery()
+  }
+}
+function onChecked(rowKeys) {
+  if (props.columns.some(item => item.type === 'selection')) {
+    emit('onChecked', rowKeys)
+  }
+}
+function handleExport(columns = props.columns, data = tableData.value) {
+  if (!data?.length)
+    return $message.warning('没有数据')
+  const columnsData = columns.filter(item => !!item.title && !item.hideInExcel)
+  const thKeys = columnsData.map(item => item.key)
+  const thData = columnsData.map(item => item.title)
+  const trData = data.map(item => thKeys.map(key => item[key]))
+  const sheet = utils.aoa_to_sheet([thData, ...trData])
+  const workBook = utils.book_new()
+  utils.book_append_sheet(workBook, sheet, '数据报表')
+  writeFile(workBook, '数据报表.xlsx')
+}
+
+// 是否显示表格
+const showTable = ref(true)
+
+// 判断是否是虚拟节点
+function isVNode(obj) {
+  return (
+    typeof obj === 'object' && obj !== null && 'type' in obj && 'props' in obj && 'children' in obj
+  )
+}
+
+defineExpose({
+  handleSearch,
+  handleReset,
+  handleExport,
+})
+</script>
+
+<style scoped>
+.n-card-custom {
+  /* Firefox：隐藏滚动条 */
+  scrollbar-width: none;
+}
+/* Webkit 内核浏览器（Edge Chromium / Chrome / Safari）：隐藏滚动条 */
+.n-card-custom::-webkit-scrollbar {
+  display: none;
+}
+</style>
