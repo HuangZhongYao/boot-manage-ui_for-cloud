@@ -65,6 +65,17 @@
           <n-input v-model:value="modalForm.driverClassName" />
         </n-form-item>
         <n-form-item
+          label="url"
+          path="url"
+          :rule="{
+            required: true,
+            message: '请输入url',
+            trigger: ['input', 'blur'],
+          }"
+        >
+          <n-input v-model:value="modalForm.url" />
+        </n-form-item>
+        <n-form-item
           label="用户名"
           path="username"
           :rule="{
@@ -157,6 +168,7 @@ const columns = [
   },
   { title: '驱动类', key: 'driverClassName' },
   { title: '用户名', key: 'username' },
+  { title: 'URL', key: 'url' },
   {
     title: '创建时间',
     key: 'createdTime',
