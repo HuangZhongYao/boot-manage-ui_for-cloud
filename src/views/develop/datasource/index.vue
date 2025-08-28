@@ -150,7 +150,7 @@ const typeIcon = {
   UNKNOWN: { value: 'i-me:database' },
 }
 const columns = [
-  { title: '名称', key: 'name' },
+  { title: '名称', key: 'name', ellipsis: { tooltip: true } },
   {
     title: '类型',
     key: 'type',
@@ -166,12 +166,13 @@ const columns = [
         ` ${type ?? ''}`,
       )],
   },
-  { title: '驱动类', key: 'driverClassName' },
-  { title: '用户名', key: 'username' },
-  { title: 'URL', key: 'url' },
+  { title: '驱动类', key: 'driverClassName', ellipsis: { tooltip: true } },
+  { title: '用户名', key: 'username', ellipsis: { tooltip: true } },
+  { title: 'URL', key: 'url', ellipsis: { tooltip: true } },
   {
     title: '创建时间',
     key: 'createdTime',
+    ellipsis: { tooltip: true },
     render(row) {
       return h('span', formatDateTime(row.createdTime))
     },
