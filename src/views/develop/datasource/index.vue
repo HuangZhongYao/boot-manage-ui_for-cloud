@@ -15,7 +15,7 @@
     >
       <MeQueryItem label="名称" :label-width="50">
         <n-input
-          v-model:value="queryItems.name"
+          v-model:value="queryItems.keyword"
           type="text"
           placeholder="数据源名称"
           clearable
