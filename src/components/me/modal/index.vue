@@ -14,6 +14,7 @@
     :preset="undefined"
     size="huge"
     :bordered="false"
+    :mask-closable="maskClosable"
     @after-leave="onAfterLeave"
   >
     <n-card :style="modalOptions.contentStyle" :closable="modalOptions.closable" @close="close()">
@@ -97,6 +98,11 @@ const props = defineProps({
   onCancel: {
     type: Function,
     default: () => {},
+  },
+  // 点击遮罩关闭
+  maskClosable: {
+    type: Boolean,
+    default: true,
   },
 })
 // 声明一个show变量，用于控制模态框的显示与隐藏
