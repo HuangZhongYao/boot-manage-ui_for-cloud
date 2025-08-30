@@ -1,6 +1,17 @@
 import { request } from '@/utils/'
 
 export default {
+  /**
+   * 获取组织树
+   * @param {Object} param -
+   * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
+   */
+  organizationTree: (param = {}) => request.get('/bm-system/organization/organizationTree', { param }),
+  /**
+   * 分页查询组织
+   * @param {Object} param - 包含查询条件的对象。
+   * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
+   */
   read: (param = {}) => request.get('/bm-system/organization/pageQueryList', { param }),
   /**
    * 创建组织
