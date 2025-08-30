@@ -9,9 +9,9 @@
 <template>
   <CommonPage>
     <div class="flex">
-      <n-spin size="small" :show="treeLoading">
+      <n-spin size="small" class="h-80vh overflow-y-auto" :show="treeLoading">
         <MenuTree
-          v-model:currentMenu="currentMenu"
+          v-model:current-menu="currentMenu"
           class="w-320 shrink-0"
           :tree-data="treeData"
           @refresh="initData"

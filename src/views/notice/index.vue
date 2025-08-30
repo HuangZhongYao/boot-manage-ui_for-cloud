@@ -58,7 +58,7 @@
             trigger: ['input', 'blur'],
           }"
         >
-          <n-input default-value="f" v-model:value="modalForm.receive" />
+          <n-input v-model:value="modalForm.receive" default-value="f" />
         </n-form-item>
       </n-form>
       <n-form>
@@ -80,11 +80,10 @@
 </template>
 
 <script setup>
-import { NButton, NTag } from 'naive-ui'
+import { NButton } from 'naive-ui'
 import api from './api.js'
-import {CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem} from '@/components/index'
+import { CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem } from '@/components/index'
 import { useCrud } from '@/composables/index.js'
-import isPermission from '@/utils/permissionsTool.js'
 import { formatDateTime } from '@/utils/index.js'
 import RichTextEditor from '@/components/me/rich-text-editor/index.vue'
 

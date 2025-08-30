@@ -18,7 +18,7 @@
             新增
           </NButton>
         </div>
-        <n-spin size="small" :show="treeOption.treeLoading">
+        <n-spin size="small" class="h-70vh overflow-y-auto" :show="treeOption.treeLoading">
           <n-tree
             :show-irrelevant-nodes="false"
             :pattern="treeOption.pattern"
