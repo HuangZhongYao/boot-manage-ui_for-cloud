@@ -1,0 +1,25 @@
+import { request } from '@/utils/'
+
+export default {
+  read: (param = {}) => request.get('/bm-system/organization/pageQueryList', { param }),
+  /**
+   * 创建组织
+   * @param {Object} data - 包含组织信息的对象。
+   * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
+   */
+  create: data => request.post('/bm-system/organization/addOrganization', data),
+
+  /**
+   * 更新组织信息。
+   * @param {Object} data - 包含待更新组织信息的对象，必须包含组织ID。
+   * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
+   */
+  update: data => request.patch(`/bm-system/organization/editOrganization`, data),
+
+  /**
+   * 删除指定ID的组织。
+   * @param {Object} data - 待删除组织的ID。
+   * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
+   */
+  delete: data => request.delete('/bm-system/organization/delOrganization', { data }),
+}
