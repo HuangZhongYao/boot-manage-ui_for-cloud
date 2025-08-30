@@ -302,27 +302,6 @@ const tableOption = ref({
       { title: '描述', key: 'remark', ellipsis: { tooltip: true } },
     ],
   loading: false,
-  showModal: false,
-  modalTitle: '',
-  modalAction: '',
-  modalActionAdd: 'add',
-  modalActionEdit: 'edit',
-  tabModalForm: {},
-  tabModalRule: {
-    name: {
-      required: true,
-      message: '请输入字典名称',
-      trigger: 'blur',
-    },
-    code: {
-      required: true,
-      message: '请输入字典编码',
-      trigger: 'blur',
-    },
-  },
-  bodyStyle: {
-    width: '600px',
-  },
 })
 // 表格数据
 const tableData = ref([])
