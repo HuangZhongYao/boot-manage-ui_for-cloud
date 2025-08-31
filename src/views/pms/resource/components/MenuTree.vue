@@ -22,6 +22,7 @@
       </div>
 
       <n-tree
+        class="hide-scrollbar h-80vh overflow-y-auto"
         :show-irrelevant-nodes="false"
         :pattern="pattern"
         :data="treeData"
