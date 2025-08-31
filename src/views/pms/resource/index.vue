@@ -9,7 +9,7 @@
 <template>
   <CommonPage>
     <div class="flex">
-      <n-spin size="small" class="h-80vh overflow-y-auto" :show="treeLoading">
+      <n-spin size="small" class="hide-scrollbar h-80vh overflow-y-auto" :show="treeLoading">
         <MenuTree
           v-model:current-menu="currentMenu"
           class="w-320 shrink-0"

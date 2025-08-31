@@ -89,3 +89,12 @@ body {
 .dark::view-transition-old(root) {
   z-index: 9999;
 }
+
+.hide-scrollbar {
+  /* Firefox：隐藏滚动条 */
+  scrollbar-width: none;
+}
+/* Webkit 内核浏览器（Edge Chromium / Chrome / Safari）：隐藏滚动条 */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

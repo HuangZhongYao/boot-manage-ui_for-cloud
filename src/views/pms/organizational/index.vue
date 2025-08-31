@@ -18,7 +18,7 @@
             新增
           </NButton>
         </div>
-        <n-spin size="small" class="h-70vh overflow-y-auto" :show="treeOption.treeLoading">
+        <n-spin size="small" class="hide-scrollbar h-70vh overflow-y-auto" :show="treeOption.treeLoading">
           <n-tree
             :show-irrelevant-nodes="false"
             :pattern="treeOption.pattern"
@@ -35,7 +35,7 @@
           />
         </n-spin>
       </n-flex>
-      <n-flex vertical class="ml-20 flex-1" style="flex-grow: 2">
+      <n-flex vertical class="hide-scrollbar ml-20 h-80vh flex-1 overflow-y-auto" style="flex-grow: 2">
         <n-flex inline justify="space-between">
           <h3>{{ currentNode?.name }}</h3>
         </n-flex>
@@ -530,5 +530,4 @@ function renderSuffix({ option }) {
 </script>
 
 <style scoped>
-
 </style>
