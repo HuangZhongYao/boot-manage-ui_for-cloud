@@ -9,7 +9,6 @@
     <MeCrud
       ref="$table"
       v-model:query-items="queryItems"
-      :scroll-x="1900"
       :columns="columns"
       :get-data="api.read"
       expand
@@ -128,7 +127,7 @@ const columns = [
   {
     title: '操作',
     key: 'actions',
-    align: 'right',
+    align: 'left',
     fixed: 'right',
     hideInExcel: true,
     render(row) {

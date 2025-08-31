@@ -408,7 +408,7 @@ const renderLabel = function ({ option }) {
   )
 }
 
-const { modalRef, modalFormRef, modalAction, modalForm, handleAdd, handleDelete, handleEdit }
+const { modalRef, modalFormRef, modalAction, modalForm, handleAdd, handleDelete, handleEdit, handleView }
   = useCrud({
     name: '角色',
     doCreate: api.create,
@@ -471,6 +471,18 @@ const columns = [
         h(
           NButton,
           {
+            size: 'tiny',
+            onClick: () => handleView(),
+          },
+          {
+            default: () => '查看',
+            icon: () => h('i', { class: 'i-material-symbols:visibility-outline text-14' }),
+          },
+        ),
+        h(
+          NButton,
+          {
+            style: 'margin-left: 12px;',
             size: 'tiny',
             type: 'info',
             secondary: true,
