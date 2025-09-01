@@ -57,7 +57,7 @@
             trigger: ['input', 'blur'],
           }"
         >
-          <n-input v-model:value="modalForm.receive" default-value="f" />
+          <UserOrganizationSelector></UserOrganizationSelector>
         </n-form-item>
       </n-form>
       <n-form>
@@ -81,10 +81,9 @@
 <script setup>
 import { NButton } from 'naive-ui'
 import api from './api.js'
-import { CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem } from '@/components/index'
+import { CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem, RichTextEditor, UserOrganizationSelector } from '@/components/index'
 import { useCrud } from '@/composables/index.js'
 import { formatDateTime } from '@/utils/index.js'
-import RichTextEditor from '@/components/me/rich-text-editor/index.vue'
 
 // 定义组件名称。设置keepAlive需将组件的name设置成当前菜单的code。一定要这样写才可以切换页面时保存当前标签页的状态。
 defineOptions({ name: 'NoticeMgt' })
