@@ -50,14 +50,8 @@
         </n-form-item>
         <n-form-item
           label="通知对象"
-          path="receive"
-          :rule="{
-            required: true,
-            message: '请选择通知对象',
-            trigger: ['input', 'blur'],
-          }"
         >
-          <UserOrganizationSelector></UserOrganizationSelector>
+          <UserOrganizationSelector @update="handleOrganizationSelector" />
         </n-form-item>
       </n-form>
       <n-form>
@@ -81,7 +75,7 @@
 <script setup>
 import { NButton } from 'naive-ui'
 import api from './api.js'
-import { CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem, RichTextEditor, UserOrganizationSelector } from '@/components/index'
+import { CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem, RichTextEditor, UserOrganizationSelector, checkedType } from '@/components/index'
 import { useCrud } from '@/composables/index.js'
 import { formatDateTime } from '@/utils/index.js'
 
@@ -101,7 +95,7 @@ const { modalRef, modalFormRef, modalForm, modalAction, handleAdd, handleDelete,
   initForm: {
     content: '',
     title: '',
-    notificationsTargetDTOList: [{ notificationsTarget: 'ALL', notificationsTargetId: '1' }],
+    notificationsTargetDTOList: [],
   },
   doCreate: api.create,
   doDelete: api.delete,
@@ -180,6 +174,28 @@ const columns = [
  */
 function updateTextContent(content) {
   modalForm.value.content = content
+}
+
+/**
+ * 组织选择器回调函数
+ * @param data 选中数据
+ */
+function handleOrganizationSelector(data) {
+  const selectorUser = data.filter(item => item.type === checkedType.user)
+  const selectorOrganization = data.filter(item => item.type === checkedType.organization)
+  const selectorRole = data.filter(item => item.type === checkedType.role)
+
+  modalForm.value.notificationsTargetDTOList = []
+
+  if (selectorUser?.length > 0) {
+    modalForm.value.notificationsTargetDTOList.push({ notificationsTarget: checkedType.user, notificationsTargetIds: selectorUser.map(item => item.id) })
+  }
+  if (selectorOrganization?.length > 0) {
+    modalForm.value.notificationsTargetDTOList.push({ notificationsTarget: checkedType.organization, notificationsTargetIds: selectorOrganization.map(item => item.id) })
+  }
+  if (selectorRole?.length > 0) {
+    modalForm.value.notificationsTargetDTOList.push({ notificationsTarget: checkedType.role, notificationsTargetIds: selectorRole.map(item => item.id) })
+  }
 }
 </script>
 

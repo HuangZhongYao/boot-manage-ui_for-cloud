@@ -55,15 +55,15 @@
 
   <NFlex v-if="!showTable" vertical align="stretch" class="h-100%">
     <NFlex inline size="large" class="overflow-auto">
-      <NCard v-for="(row) in tableData" :key="row._key" size="small" hoverable class="n-card-custom max-h-400 max-w-30% min-w-15% overflow-y-auto border-r-8">
-        {{ row._key }}
+      <NCard v-for="(row) in tableData" :key="row.key" size="small" hoverable class="n-card-custom max-h-400 max-w-30% min-w-15% overflow-y-auto border-r-8">
+        {{ row.key }}
         <n-list hoverable clickable show-divider>
           <n-list-item v-for="column in columns" :key="column.key">
             <span class="inline-block w-70px">{{ column.title }}</span>
             <span class="vertical-mid">
               <template v-if="column.render">
                 <template v-if="Array.isArray(column.render(row))">
-                  <template v-for="(vnode, index) in column.render(row)" :key="column.key + row._key + index">
+                  <template v-for="(vnode, index) in column.render(row)" :key="column.key + row.key + index">
                     <component :is="vnode" />
                   </template>
                 </template>
@@ -195,7 +195,7 @@ async function handleQuery() {
       onPageChange(pagination.page - 1)
     }
     for (const valueElement of tableData.value) {
-      valueElement._key = nanoid()
+      valueElement.key = valueElement[props.rowKey] || nanoid()
     }
   }
   // eslint-disable-next-line unused-imports/no-unused-vars
