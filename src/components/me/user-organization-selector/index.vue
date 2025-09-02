@@ -370,7 +370,7 @@ defineExpose({
       </n-space>
     </n-space>
     <n-tabs type="line" animated>
-      <n-tab-pane name="oasis" tab="用户">
+      <n-tab-pane name="user" tab="用户">
         <n-flex justify="space-between">
           <n-flex vertical :size="[46, 10]">
             <h3>组织架构</h3>
@@ -414,7 +414,7 @@ defineExpose({
           </n-flex>
         </n-flex>
       </n-tab-pane>
-      <n-tab-pane name="the beatles" tab="部门">
+      <n-tab-pane name="organization" tab="组织">
         <n-flex vertical :size="[46, 10]">
           <h3>组织选择</h3>
           <div class="flex">
@@ -441,6 +441,8 @@ defineExpose({
             />
           </n-spin>
         </n-flex>
+      </n-tab-pane>
+      <n-tab-pane name="role" tab="角色">
       </n-tab-pane>
     </n-tabs>
   </MeModal>
