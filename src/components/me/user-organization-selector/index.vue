@@ -8,11 +8,53 @@ import userApi from '@/views/pms/user/api.js'
 
 // 定义组件名称
 defineOptions({ name: 'UserOrganizationSelector' })
-
+// 定义组件属性
+const props = defineProps({
+  // 是否多选
+  multiple: {
+    type: Boolean,
+    default: false,
+  },
+  // 默认选中数据
+  checkedData: {
+    type: [Array, Object],
+    default: () => [],
+  },
+})
+// 挂载函数
+onMounted(() => {
+  initData()
+})
+// 模态框ref
 const modalRef = ref(null)
+// 选中的用户和部门数据
+const checkedDataRef = ref([])
+// 选中数据类型
+const checkedType = { user: 'USER', organization: 'ORGANIZATION' }
 
+/**
+ * 添加选中数据
+ * @param type  类型
+ * @param data  数据
+ */
+function addCheckedData(type, data) {
+  // 清理 checkedDataRef 中原有的 type === type 数据
+  const cleanedCheckedData = checkedDataRef.value.filter(item => item.type !== type)
+  // 合并清理后的旧数据 + 新数据
+  checkedDataRef.value = [...cleanedCheckedData, ...data]
+}
+/**
+ * 根据类型获取选中数据
+ * @param type 类型
+ * @returns {UnwrapRefSimple<*>[]}
+ */
+function filterCheckedData(type) {
+  return checkedDataRef.value.filter(item => item.type === type)
+}
 // 组织树结构数据
 const treeData = ref([])
+// 树当前选中节点
+const currentNode = ref(null)
 // 树设置项
 const treeOption = ref({
   pattern: '',
@@ -22,9 +64,7 @@ const treeOption = ref({
   },
 })
 
-// 树当前选中节点
-const currentNode = ref(null)
-
+// 表格分页对象
 const pagination = reactive({
   page: 1,
   pageSize: 20,
@@ -46,14 +86,6 @@ const pagination = reactive({
 })
 // 表格选择的行key
 const checkedRowKeysRef = ref([])
-
-// 选中的用户和部门数据
-const checkedDataRef = ref([])
-
-function filterCheckedData(type) {
-  return checkedDataRef.value.filter(item => item.type === type)
-}
-
 const genders = [
   { label: '男', value: 'MALE' },
   { label: '女', value: 'FEMALE' },
@@ -132,7 +164,7 @@ const tableOption = ref({
 const tableData = ref([])
 
 /**
- * 加载用户数据
+ * 加载当前选择节点的用户数据
  */
 async function loadUserData() {
   // 未选中节点不查询
@@ -158,12 +190,6 @@ async function loadUserData() {
   // 关闭加载层
   tableOption.value.loading = false
 }
-
-// 挂载函数
-onMounted(() => {
-  initData()
-  modalRef.value.open()
-})
 
 /**
  * 获取树数据
@@ -212,25 +238,21 @@ function organizationRenderLabel(option) {
   )
 }
 
-export default {
-  modalRef
-}
 /**
- * 部门选择器选中树节点发生变化时回调
+ * 部门选择器勾选节点发生变化时回调
  * @param keys 选中节点的 key 数组
  * @param option 选中选项数组
  * @param node 选中的节点对象
  */
 function onOrganizationSelectChecked(keys, option, { node }) {
-  // 1. 清理 checkedDataRef 中原有的 type: 'ORGANIZATION' 数据
-  const cleanedCheckedData = checkedDataRef.value.filter(item => item.type !== 'ORGANIZATION')
-  // 2. 从 option 中提取新的 type: 'ORGANIZATION' 数据
+  // 从 option 中提取新的选中数据
   const newOrganizationData = option.map(row => ({
     id: row.id,
     name: row.name,
-    type: 'ORGANIZATION', // 固定类型为组织
+    type: checkedType.organization,
   }))
-  checkedDataRef.value = [...cleanedCheckedData, ...newOrganizationData]
+  // 添加到 checkedDataRef 中
+  addCheckedData(checkedType.organization, newOrganizationData)
 }
 
 /**
@@ -247,29 +269,22 @@ function renderSwitcherIcon(treeOption) {
   }
 }
 
-// 在handleCheckedRowChange或getRowProps中调用
-function getSelectedRows() {
-  return tableData.value.filter(row =>
-    checkedRowKeysRef.value.includes(row.key),
-  )
-}
-
-// 表格选中回调
+/**
+ * 表格选中回调
+ */
 function handleCheckedRowChange() {
-  const selectedRows = getSelectedRows() // 获取当前选中的行数据
-
-  // 1. 清理 checkedDataRef 中原有的 type: 'USER' 数据（移除所有用户类型数据）
-  const cleanedCheckedData = checkedDataRef.value.filter(item => item.type !== 'USER')
-
-  // 2. 从 selectedRows 中提取新的 type: 'USER' 数据（选中行的 id、username，固定 type: 'USER'）
+  // 获取当前选中的行数据
+  const selectedRows = tableData.value.filter(row =>
+    checkedRowKeysRef.value.includes(row.id),
+  )
+  // 从 selectedRows 中提取新的 type: 'USER' 数据
   const newUserData = selectedRows.map(row => ({
     id: row.id,
     name: row.username,
-    type: 'USER', // 固定类型为用户
+    type: checkedType.user,
   }))
-
-  // 3. 合并清理后的旧数据 + 新数据（最终只包含本次选中的用户数据）
-  checkedDataRef.value = [...cleanedCheckedData, ...newUserData]
+  // 添加到 checkedDataRef 中
+  addCheckedData(checkedType.user, newUserData)
 }
 </script>
 
@@ -280,12 +295,12 @@ function handleCheckedRowChange() {
   <MeModal ref="modalRef" width="1000px">
     <n-space>
       <n-space>
-        <NTag v-for="item in filterCheckedData('USER')" :key="item.id" type="success">
+        <NTag v-for="item in filterCheckedData(checkedType.user)" :key="item.id" type="success">
           {{ item.name }}
         </NTag>
       </n-space>
       <n-space>
-        <NTag v-for="item in filterCheckedData('ORGANIZATION')" :key="item.id" type="info">
+        <NTag v-for="item in filterCheckedData(checkedType.organization)" :key="item.id" type="info">
           {{ item.name }}
         </NTag>
       </n-space>
@@ -324,6 +339,7 @@ function handleCheckedRowChange() {
             </n-flex>
             <NDataTable
               v-model:checked-row-keys="checkedRowKeysRef"
+              :row-key="row => row.id"
               :remote="true"
               :columns="tableOption.columns"
               :loading="tableOption.loading"
