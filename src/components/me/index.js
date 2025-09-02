@@ -8,5 +8,5 @@ export { default as DictSelect } from './dict-select/index.vue'
 /**
  * 用户部门选择器
  */
-export { default as UserOrganizationSelector } from './user-organization-Selector/index.vue'
+export { default as UserOrganizationSelector } from '@/components/me/user-organization-selector/index.vue'
 export { default as RichTextEditor } from './rich-text-editor/index.vue'
