@@ -141,6 +141,19 @@ const columns = [
           NButton,
           {
             size: 'tiny',
+            type: 'info',
+            style: 'margin-left: 8px;',
+            onClick: () => handleView(),
+          },
+          {
+            default: () => '发布',
+            icon: () => h('i', { class: 'i-fe:send text-14' }),
+          },
+        ),
+        h(
+          NButton,
+          {
+            size: 'tiny',
             type: 'primary',
             style: 'margin-left: 12px;',
             onClick: () => handleEdit(row),
