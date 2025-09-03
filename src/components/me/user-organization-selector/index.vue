@@ -9,6 +9,11 @@ import userApi from '@/views/pms/user/api.js'
 defineOptions({ name: 'UserOrganizationSelector' })
 // 定义组件属性
 const props = defineProps({
+  // 是否选择器禁用
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
   // 是否多选
   multiple: {
     type: Boolean,
@@ -18,6 +23,11 @@ const props = defineProps({
   checkedData: {
     type: Array,
     default: () => [],
+  },
+  // [checkedType.user, checkedType.organization, checkedType.role,] 选择范围 允许选择的类型 默认为用户, 当multiple是false时，只有第一个生效
+  selectRange: {
+    type: Array,
+    default: () => [checkedType.user],
   },
 })
 // 声明事件
@@ -29,7 +39,7 @@ onMounted(() => {
 // 模态框ref
 const modalRef = ref(null)
 // 选中的用户和部门数据
-const checkedDataRef = ref([])
+const checkedDataRef = ref(props.checkedData || [])
 
 // 组织树结构数据
 const treeData = ref([])
@@ -40,7 +50,7 @@ const userSearchPattern = ref('')
 // 部门tab搜索状态
 const orgSearchPattern = ref('')
 // 树选中节点key
-const checkedTreeKey = ref([])
+const checkedTreeKey = ref(checkedDataRef.value.filter(item => item.type === checkedType.organization).map(item => item.id))
 // 树设置项
 const treeOption = ref({
   treeLoading: true,
@@ -70,7 +80,7 @@ const pagination = reactive({
   },
 })
 // 表格选择的行key
-const checkedRowKeysRef = ref([])
+const checkedRowKeysRef = ref(checkedDataRef.value.filter(item => item.type === checkedType.user).map(item => item.id))
 const genders = [
   { label: '男', value: 'MALE' },
   { label: '女', value: 'FEMALE' },
@@ -158,8 +168,7 @@ async function loadUserData() {
   }
   // 显示加载层
   tableOption.value.loading = true
-  // 清空选中状态
-  checkedRowKeysRef.value = []
+
   try {
     // 请求用户数据
     const res = await userApi.read({
@@ -247,7 +256,6 @@ function organizationRenderLabel(option) {
  * @param node 选中的节点对象
  */
 function onOrganizationSelectChecked(keys, option, { node }) {
-  checkedTreeKey.value = option.map(row => row.id)
   // 从 option 中提取新的选中数据
   const newOrganizationData = option.map(row => ({
     id: row.id,
@@ -332,9 +340,9 @@ defineExpose({
 
 <template>
   <n-flex class="w-80vh">
-    <n-button type="info" class="pl-15 pr-15" size="small" strong secondary @click="modalRef.open()">
+    <NButton type="info" class="pl-15 pr-15" size="small" :disabled="props.disabled" strong secondary @click="modalRef.open()">
       添加
-    </n-button>
+    </NButton>
     <n-space class="h-7vh overflow-y-auto">
       <n-space>
         <TransitionGroup name="list" tag="ul">

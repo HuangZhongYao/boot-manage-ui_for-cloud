@@ -50,12 +50,13 @@
         </n-form-item>
         <n-form-item
           label="通知对象"
+          required
         >
-          <UserOrganizationSelector @update="handleOrganizationSelector" />
+          <UserOrganizationSelector :disabled="modalAction === 'view'" :checked-data="modalForm.notificationsTargets" @update="handleOrganizationSelector" />
         </n-form-item>
       </n-form>
       <n-form>
-        <RichTextEditor :content="modalForm.centent" @update="updateTextContent" />
+        <RichTextEditor :read-only-flag="modalAction === 'view'" :show-toolbar-flag="modalAction !== 'view'" :content="modalForm.content" @update="updateTextContent" />
       </n-form>
       <n-space v-show="false" :size="[50, 5]" justify="center">
         <n-skeleton height="35px" width="310px" />
@@ -95,7 +96,7 @@ const { modalRef, modalFormRef, modalForm, modalAction, handleAdd, handleDelete,
   initForm: {
     content: '',
     title: '',
-    notificationsTargetDTOList: [],
+    notificationsTargets: [],
   },
   doCreate: api.create,
   doDelete: api.delete,
@@ -202,7 +203,7 @@ function updateTextContent(content) {
  * @param data 选中数据
  */
 function handleOrganizationSelector(data) {
-  modalForm.value.notificationsTargetDTOList = data
+  modalForm.value.notificationsTargets = data
 }
 </script>
 
