@@ -1,6 +1,11 @@
 import { request } from '@/utils/'
 
 export default {
+  /**
+   * 获取公告列表。
+   * @param {Object} param - 查询参数对象。
+   * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
+   */
   read: (param = {}) => request.get('/bm-system/notifications/pageQueryList', { param }),
   /**
    * 创建公告
