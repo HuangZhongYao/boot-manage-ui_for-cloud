@@ -130,7 +130,7 @@ const columns = [
           {
             size: 'tiny',
             style: 'margin-left: 8px;',
-            onClick: () => handleView(),
+            onClick: () => handleView(row),
           },
           {
             default: () => '查看',
@@ -143,7 +143,7 @@ const columns = [
             size: 'tiny',
             type: 'info',
             style: 'margin-left: 8px;',
-            onClick: () => handleView(),
+            onClick: () => handlePublish(row),
           },
           {
             default: () => '发布',
@@ -182,6 +182,14 @@ const columns = [
 ]
 
 /**
+ * 发布公告方法
+ * @param row
+ */
+function handlePublish(row) {
+  api.publish({ id: row.id })
+}
+
+/**
  * 富文本内容更新函数
  * @param content
  */
@@ -194,21 +202,7 @@ function updateTextContent(content) {
  * @param data 选中数据
  */
 function handleOrganizationSelector(data) {
-  const selectorUser = data.filter(item => item.type === checkedType.user)
-  const selectorOrganization = data.filter(item => item.type === checkedType.organization)
-  const selectorRole = data.filter(item => item.type === checkedType.role)
-
-  modalForm.value.notificationsTargetDTOList = []
-
-  if (selectorUser?.length > 0) {
-    modalForm.value.notificationsTargetDTOList.push({ notificationsTarget: checkedType.user, notificationsTargetIds: selectorUser.map(item => item.id) })
-  }
-  if (selectorOrganization?.length > 0) {
-    modalForm.value.notificationsTargetDTOList.push({ notificationsTarget: checkedType.organization, notificationsTargetIds: selectorOrganization.map(item => item.id) })
-  }
-  if (selectorRole?.length > 0) {
-    modalForm.value.notificationsTargetDTOList.push({ notificationsTarget: checkedType.role, notificationsTargetIds: selectorRole.map(item => item.id) })
-  }
+  modalForm.value.notificationsTargetDTOList = data
 }
 </script>
 
