@@ -116,7 +116,6 @@ function handleDelete(item) {
         item._visible = true
       })
   }, 300) // 动画时长，与 CSS 中 transition 保持一致
-  handleQuery()
 }
 
 // 页面加载时查询数据
