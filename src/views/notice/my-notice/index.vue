@@ -6,7 +6,7 @@ defineOptions({ name: 'MyNotice' })
 const queryItems = ref({})
 const loading = ref(false)
 
-const tableData = ref([])
+const listData = ref([])
 
 const pagination = reactive({
   itemCount: 0,
@@ -26,28 +26,47 @@ const pagination = reactive({
   },
   onUpdatePageSize: (pageSize) => {
     pagination.pageSize = pageSize
+    handleQuery()
   },
 })
 
+/**
+ * 查询通知列表
+ * @returns {Promise<void>}
+ */
 async function handleQuery() {
   try {
     loading.value = true
     const params = { pageNo: pagination.page, pageSize: pagination.pageSize, ...queryItems.value }
     const res = await api.read(params)
     // 判断使用后端分页还是前端分页
-    tableData.value = res.result?.records || res.result
+    listData.value = res.result?.records || res.result
     pagination.itemCount = res.result.total ?? res.result.length
     pagination.pages = res.result.pages ?? 1
-    if (pagination.itemCount && !tableData.value.length && pagination.page > 1) {
-    }
-  }
+  }// eslint-disable-next-line unused-imports/no-unused-vars
   catch (error) {
-    tableData.value = []
+    listData.value = []
     pagination.itemCount = 0
   }
   finally {
     loading.value = false
   }
+}
+
+/**
+ * 已读
+ * @param data
+ */
+function readRecords(data) {
+  api.readNotificationRecords(data)
+}
+
+/**
+ * 删除
+ * @param data
+ */
+function delRecords(data) {
+  api.delNotificationRecord(data)
 }
 
 onMounted(() => {
@@ -57,27 +76,36 @@ onMounted(() => {
 
 <template>
   <n-list hoverable clickable>
-    <n-list-item v-for="item in tableData" :key="item.id">
+    <n-list-item v-for="item in listData" :key="item.id" class="group">
       <n-flex justify="space-between">
         <n-badge :value="1" dot>
           <span>{{ item.title }}</span>
         </n-badge>
-        <n-space>
-          <n-button quaternary>
+        <n-space class="visibility-hidden group-hover:visibility-visible opacity-0 transition-all duration-700 group-hover:opacity-100">
+          <n-button quaternary @click="readRecords({ ids: [item.id], readAll: false })">
             <template #icon>
               <i class="i-fe:check" />
             </template>
           </n-button>
-          <n-button quaternary>
+          <n-button quaternary @click="delRecords({ ids: [item.id], delAll: false })">
             <template #icon>
               <i class="i-fe:x" />
             </template>
           </n-button>
         </n-space>
       </n-flex>
+      <n-tag size="small" type="success">系统</n-tag>
+      <n-time :time="item.createdTime" />
     </n-list-item>
   </n-list>
-  <n-pagination :page-count="pagination.pages" :page-size="pagination.pageSize" class="pos-absolute bottom-1vh w-full justify-center">
+  <n-pagination
+    v-model:page="pagination.page"
+    v-model:page-size="pagination.pageSize"
+    v-model:page-count="pagination.pages"
+    class="pos-absolute bottom-1vh w-full justify-center"
+    @update-page-size="pagination.onUpdatePageSize"
+    @update-page="pagination.onChange"
+  >
     <template #prev>
       <
     </template>

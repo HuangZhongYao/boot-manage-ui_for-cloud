@@ -27,8 +27,11 @@
         <i class="i-fe:bell hover:cursor-pointer" />
       </n-badge>
       <UserAvatar class="mr-16" />
-      <n-drawer v-model:show="showMyNotice" :max-width="1000" width="80vh" close-on-esc placement="right" resizable>
-        <n-drawer-content title="消息通知" closable>
+      <n-drawer v-model:show="showMyNotice" width="50vh" close-on-esc placement="right" resizable>
+        <n-drawer-content closable>
+          <template #header>
+            <i class="i-fe:bell hover:cursor-pointer" /> 通知
+          </template>
           <MyNotice />
         </n-drawer-content>
       </n-drawer>
