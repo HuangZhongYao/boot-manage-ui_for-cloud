@@ -13,8 +13,8 @@ import { setupInterceptors } from './interceptors'
 /**
  * 根据提供的选项创建一个 axios 实例。
  *
- * @param {Object} options - 自定义 axios 实例的配置项。
- * @returns {Object} 返回创建的 axios 实例。
+ * @param {object} options - 自定义 axios 实例的配置项。
+ * @returns {object} 返回创建的 axios 实例。
  */
 export function createAxios(options = {}) {
   // 定义默认配置项，包括基础URL和超时时间

@@ -30,7 +30,7 @@ export const router = createRouter({
  * 在Vue应用中设置和初始化路由。
  * 这包括应用路由实例和设置路由守卫。
  *
- * @param {Object} app - Vue应用实例。
+ * @param {object} app - Vue应用实例。
  */
 export async function setupRouter(app) {
   app.use(router)

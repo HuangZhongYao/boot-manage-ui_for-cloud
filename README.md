@@ -11,7 +11,7 @@
 
 Boot Admin是一款极简风格的后台管理模板。
 前端基于`zclzone`的[Vue Naive Admin](https://github.com/zclzone/vue-naive-admin/)进行二次开发，使用 Vite + Vue3 + Naive UI + Pinia + Unocss + 无 Typescript降低门槛。
-后端使用 SpringBoot 3.x + MyBatis-Plus + Sa-Token + Redis + Java 17 + MySql 8.0  。
+后端使用 SpringBoot 3.x + MyBatis-Plus + Sa-Token + Redis + Java 17 + MySql 8.0 。
 使用最新技术简单易用、代码优雅、赏心悦目。封装接口开发中常用参数验证、mybatis-plus扩展、统一响应值包装、代码生成，一键生成CRUD开发效率极高！！
 
 ## 设计理念
@@ -47,6 +47,7 @@ Boot Admin是一款极简风格的后台管理模板。
 ![](./src/assets/images/network.png)
 
 ## 前端页面预览
+
 - 登录页面 ![](./src/assets/images/login-page.png)
 - 代码生成页面 ![](./src/assets/images/code.png)
 - 系统管理页面 ![](./src/assets/images/sys.png)
@@ -66,12 +67,12 @@ npm run build
 npm run preview
 ```
 
-
 ## 后端
 
-Boot Admin 提供一套Java最新技术开发的后端代码，简易上手、效率高SpringBoot单体架构版，提供RABC、代码生成、系统基础等接口所需的一些基础接口  。
+Boot Admin 提供一套Java最新技术开发的后端代码，简易上手、效率高SpringBoot单体架构版，提供RABC、代码生成、系统基础等接口所需的一些基础接口 。
 
 技术栈:
+
 - Java 17
 - SpringBoot 3.2.x
 - Mybatis-Plus
@@ -81,6 +82,7 @@ Boot Admin 提供一套Java最新技术开发的后端代码，简易上手、�
 - MySQL 8
 
 源码
+
 - 源码-github: [boot-manage | github](https://github.com/HuangZhongYao/boot-manage)
 - 源码-gitee: [boot-manage | gitee](https://gitee.com/smog_huang/boot-manage)
 
@@ -96,4 +98,3 @@ Boot Admin 提供一套Java最新技术开发的后端代码，简易上手、�
 - 复制、修改和发行本项目代码需包含原作者的版权及许可信息，包括但不限于文件头注释、协议等
 
 作者只想保留版权，没有任何其他限制。
-

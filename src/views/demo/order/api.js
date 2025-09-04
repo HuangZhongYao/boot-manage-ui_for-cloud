@@ -10,7 +10,7 @@ import { request } from '@/utils/index.js'
 export default {
   /**
    * 创建商城订单。
-   * @param {Object} data - 包含新商城订单信息的对象。
+   * @param {object} data - 包含新商城订单信息的对象。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
   create: data => request.post('/order/addBusOrder', data),
@@ -24,7 +24,7 @@ export default {
 
   /**
    * 更新商城订单信息。
-   * @param {Object} data - 包含待更新商城订单信息的对象，必须包含商城订单ID。
+   * @param {object} data - 包含待更新商城订单信息的对象，必须包含商城订单ID。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
   update: data => request.patch(`/order/editBusOrder`, data),

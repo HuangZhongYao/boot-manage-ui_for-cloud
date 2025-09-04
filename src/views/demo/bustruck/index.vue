@@ -122,7 +122,6 @@
           <n-form-item label="VIN车辆识别代码" path="vin">
             <n-input v-model:value="formValue.vin" placeholder="请输入VIN车辆识别代码" />
           </n-form-item>
-
         </n-form>
         <template #footer>
           <NButton @click="drawerShowFlag = false">

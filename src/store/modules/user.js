@@ -7,12 +7,12 @@ import { defineStore } from 'pinia'
 /**
  * 定义一个名为useUserStore的函数，用于获取user store的实例。
  * 这个函数使用defineStore函数创建，并配置了user store的相关属性和方法。
- * @returns {Object} 返回一个包含state、getters、actions的对象，用于操作和获取用户信息。
+ * @returns {object} 返回一个包含state、getters、actions的对象，用于操作和获取用户信息。
  */
 export const useUserStore = defineStore('user', {
   /**
    * 定义store的初始状态。
-   * @returns {Object} 返回一个包含userInfo的对象，userInfo初始值为null。
+   * @returns {object} 返回一个包含userInfo的对象，userInfo初始值为null。
    */
   state: () => ({
     userInfo: null,
@@ -31,35 +31,35 @@ export const useUserStore = defineStore('user', {
     },
     /**
      * 获取用户的用户名。
-     * @returns {String|null} 返回用户的用户名，如果userInfo为null，则返回null。
+     * @returns {string | null} 返回用户的用户名，如果userInfo为null，则返回null。
      */
     username() {
       return this.userInfo?.username
     },
     /**
      * 获取用户的账号。
-     * @returns {String|null} 返回用户的账号，如果userInfo为null，则返回null。
+     * @returns {string | null} 返回用户的账号，如果userInfo为null，则返回null。
      */
     account() {
       return this.userInfo?.account
     },
     /**
      * 获取用户的电话号码。
-     * @returns {String|null} 返回用户的电话号码，如果userInfo为null，则返回null。
+     * @returns {string | null} 返回用户的电话号码，如果userInfo为null，则返回null。
      */
     phone() {
       return this.userInfo?.phone
     },
     /**
      * 获取用户的昵称。
-     * @returns {String|null} 返回用户的昵称，如果userInfo为null，则返回null。
+     * @returns {string | null} 返回用户的昵称，如果userInfo为null，则返回null。
      */
     nickName() {
       return this.userInfo?.nickName
     },
     /**
      * 获取用户的头像URL。
-     * @returns {String|null} 返回用户的头像URL，如果userInfo为null，则返回null。
+     * @returns {string | null} 返回用户的头像URL，如果userInfo为null，则返回null。
      */
     avatar() {
       return this.userInfo?.avatar
@@ -80,7 +80,7 @@ export const useUserStore = defineStore('user', {
     },
     /**
      * 获取用户当前的角色信息。
-     * @returns {Object|{}} 返回用户当前的角色信息，如果userInfo为null，则返回空对象{}。
+     * @returns {object | {}} 返回用户当前的角色信息，如果userInfo为null，则返回空对象{}。
      */
     currentRole() {
       return this.userInfo?.currentRole || {}
@@ -100,7 +100,7 @@ export const useUserStore = defineStore('user', {
   actions: {
     /**
      * 设置用户信息。
-     * @param {Object} user - 包含用户信息的对象。
+     * @param {object} user - 包含用户信息的对象。
      */
     setUser(user) {
       this.userInfo = user

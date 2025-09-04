@@ -102,7 +102,6 @@
           <n-form-item label="支付状态" path="payState">
             <n-input v-model:value="formValue.payState" placeholder="请输入支付状态" />
           </n-form-item>
-
         </n-form>
         <template #footer>
           <NButton @click="drawerShowFlag = false">

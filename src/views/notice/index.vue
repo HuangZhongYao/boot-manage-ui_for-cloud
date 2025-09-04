@@ -76,7 +76,7 @@
 <script setup>
 import { NButton } from 'naive-ui'
 import api from './api.js'
-import { CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem, RichTextEditor, UserOrganizationSelector, checkedType } from '@/components/index'
+import { CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem, RichTextEditor, UserOrganizationSelector } from '@/components/index'
 import { useCrud } from '@/composables/index.js'
 import { formatDateTime } from '@/utils/index.js'
 

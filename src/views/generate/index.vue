@@ -7,7 +7,7 @@
   <CommonPage>
     <n-space vertical>
       <n-flex justify="space-between">
-        <n-button :bordered="false" :disabled="completeFlag" size="large" tertiary ghost type="success" secondary strong @click="prev">
+        <n-button :bordered="false" :disabled="completeFlag" size="large" type="success" ghost secondary strong tertiary @click="prev">
           上一步
           <template #icon>
             <n-icon size="30px" :depth="2" color="#0e7a0d">
@@ -15,7 +15,7 @@
             </n-icon>
           </template>
         </n-button>
-        <n-button focusable :bordered="false" :disabled="completeFlag" size="large" tertiary ghost type="success" icon-placement="right" secondary strong @click="next">
+        <n-button :bordered="false" :disabled="completeFlag" size="large" type="success" icon-placement="right" tertiary ghost secondary strong focusable @click="next">
           下一步
           <template #icon>
             <n-icon size="30px" :depth="2" color="#0e7a0d">

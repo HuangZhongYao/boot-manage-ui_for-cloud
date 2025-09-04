@@ -16,8 +16,8 @@ const permission = {
   /**
    * 指令的挂载阶段钩子
    * @param {Element} el 指令所绑定的元素
-   * @param {Object} binding Vue的指令绑定对象
-   * @param {Object} binding.value 指令的绑定值，代表需要的权限码
+   * @param {object} binding Vue的指令绑定对象
+   * @param {object} binding.value 指令的绑定值，代表需要的权限码
    */
   mounted(el, binding) {
     // 获取当前路由信息
@@ -33,7 +33,7 @@ const permission = {
 
 /**
  * 在应用中注册自定义指令
- * @param {Object} app Vue应用实例
+ * @param {object} app Vue应用实例
  */
 export function setupDirectives(app) {
   // 注册权限指令

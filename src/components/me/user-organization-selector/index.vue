@@ -400,8 +400,8 @@ defineExpose({
                 :on-update:selected-keys="onSelect"
                 key-field="id"
                 label-field="name"
-                default-expand-all
-                block-line
+
+                block-line default-expand-all
               />
             </n-spin>
           </n-flex>
@@ -450,8 +450,7 @@ defineExpose({
           </n-spin>
         </n-flex>
       </n-tab-pane>
-      <n-tab-pane name="role" tab="角色">
-      </n-tab-pane>
+      <n-tab-pane name="role" tab="角色" />
     </n-tabs>
   </MeModal>
 </template>

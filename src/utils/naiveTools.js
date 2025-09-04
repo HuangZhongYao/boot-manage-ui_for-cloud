@@ -13,7 +13,7 @@ import { useAppStore } from '@/store'
 
 /**
  * 设置消息提示的管理类
- * @param {Object} NMessage - Naive UI的消息提示实例
+ * @param {object} NMessage - Naive UI的消息提示实例
  * @returns {Message} - 消息提示管理类的实例
  */
 export function setupMessage(NMessage) {
@@ -30,7 +30,8 @@ export function setupMessage(NMessage) {
      */
     constructor() {
       // 如果已存在实例，则直接返回，避免重复创建
-      if (Message.instance) return Message.instance
+      if (Message.instance)
+        return Message.instance
       // 设置当前实例为新的实例
       Message.instance = this
       // 初始化消息存储和移除定时器
@@ -67,7 +68,7 @@ export function setupMessage(NMessage) {
      * 显示消息提示
      * @param {string} type - 消息提示的类型
      * @param {string|Array} content - 消息提示的内容
-     * @param {Object} option - 消息提示的配置选项
+     * @param {object} option - 消息提示的配置选项
      */
     showMessage(type, content, option = {}) {
       // 如果内容是数组，则对每个内容分别提示
@@ -101,7 +102,7 @@ export function setupMessage(NMessage) {
     /**
      * 显示加载中的消息提示
      * @param {string} content - 消息提示的内容
-     * @param {Object} option - 消息提示的配置选项
+     * @param {object} option - 消息提示的配置选项
      */
     loading(content, option) {
       this.showMessage('loading', content, option)
@@ -110,7 +111,7 @@ export function setupMessage(NMessage) {
     /**
      * 显示成功的消息提示
      * @param {string} content - 消息提示的内容
-     * @param {Object} option - 消息提示的配置选项
+     * @param {object} option - 消息提示的配置选项
      */
     success(content, option) {
       this.showMessage('success', content, option)
@@ -119,7 +120,7 @@ export function setupMessage(NMessage) {
     /**
      * 显示错误的消息提示
      * @param {string} content - 消息提示的内容
-     * @param {Object} option - 消息提示的配置选项
+     * @param {object} option - 消息提示的配置选项
      */
     error(content, option) {
       this.showMessage('error', content, option)
@@ -150,8 +151,8 @@ export function setupMessage(NMessage) {
 
 /**
  * 设置对话框的配置和行为
- * @param {Object} NDialog - Naive UI的对话框实例
- * @returns {Object} - 配置后的对话框实例
+ * @param {object} NDialog - Naive UI的对话框实例
+ * @returns {object} - 配置后的对话框实例
  */
 export function setupDialog(NDialog) {
   // 重写confirm方法，提供更灵活的配置选项

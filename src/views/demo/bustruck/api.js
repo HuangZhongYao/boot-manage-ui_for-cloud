@@ -10,7 +10,7 @@ import { request } from '@/utils/index.js'
 export default {
   /**
    * 创建车辆。
-   * @param {Object} data - 包含新车辆信息的对象。
+   * @param {object} data - 包含新车辆信息的对象。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
   create: data => request.post('/bustruck/addBusTruck', data),
@@ -24,7 +24,7 @@ export default {
 
   /**
    * 更新车辆信息。
-   * @param {Object} data - 包含待更新车辆信息的对象，必须包含车辆ID。
+   * @param {object} data - 包含待更新车辆信息的对象，必须包含车辆ID。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
   update: data => request.patch(`/bustruck/editBusTruck`, data),

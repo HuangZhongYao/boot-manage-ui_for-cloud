@@ -9,7 +9,7 @@ import { isExternal } from '@/utils' // 引入判断路径是否为外部链接�
 export const usePermissionStore = defineStore('permission', {
   /**
    * 初始化store的状态对象。
-   * @returns {Object} 包含初始状态的对象。
+   * @returns {object} 包含初始状态的对象。
    */
   state: () => ({
     accessRoutes: [], // 存储用户可以访问的路由列表
@@ -38,16 +38,17 @@ export const usePermissionStore = defineStore('permission', {
 
     /**
      * 根据权限项生成菜单项。
-     * @param {Object} item - 权限项，包含权限信息。
-     * @param {Object} [parent] - 父菜单项，用于生成子菜单。
-     * @returns {Object | null} 返回生成的菜单项或null（如果权限项不可见）。
+     * @param {object} item - 权限项，包含权限信息。
+     * @param {object} [parent] - 父菜单项，用于生成子菜单。
+     * @returns {object | null} 返回生成的菜单项或null（如果权限项不可见）。
      */
     getMenuItem(item, parent) {
       const route = this.generateRoute(item, item.show ? null : parent?.key) // 生成路由配置
       if (item.enable && route.path && !route.path.startsWith('http')) {
         this.accessRoutes.push(route) // 如果权限启用且路径有效，添加到可访问路由列表
       }
-      if (!item.show) return null // 如果权限项不可见，返回null
+      if (!item.show)
+        return null // 如果权限项不可见，返回null
 
       // 构建菜单项的基本信息
       const menuItem = {
@@ -66,16 +67,17 @@ export const usePermissionStore = defineStore('permission', {
           .map(child => this.getMenuItem(child, menuItem)) // 递归生成子菜单项
           .filter(item => !!item) // 过滤掉无效的子菜单项
           .sort((a, b) => a.order - b.order) // 按顺序排序子菜单项
-        if (!menuItem.children.length) delete menuItem.children // 如果没有子菜单，删除children属性
+        if (!menuItem.children.length)
+          delete menuItem.children // 如果没有子菜单，删除children属性
       }
       return menuItem
     },
 
     /**
      * 根据权限项信息生成路由配置。
-     * @param {Object} item - 权限项，包含权限信息。
-     * @param {String} [parentKey] - 父菜单的key，用于生成子菜单的路由配置。
-     * @returns {Object} 路由配置对象。
+     * @param {object} item - 权限项，包含权限信息。
+     * @param {string} [parentKey] - 父菜单的key，用于生成子菜单的路由配置。
+     * @returns {object} 路由配置对象。
      */
     generateRoute(item, parentKey) {
       let originPath

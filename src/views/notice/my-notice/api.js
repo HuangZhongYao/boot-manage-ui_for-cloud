@@ -3,7 +3,7 @@ import { request } from '@/utils/'
 export default {
   /**
    * 分页查询我的通知记录
-   * @param {Object} params - 查询参数对象。
+   * @param {object} params - 查询参数对象。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
   read: (params = {}) => request.get('/bm-system/notifications/queryMyNotificationRecords', { params }),

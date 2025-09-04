@@ -59,7 +59,7 @@ async function handleQuery() {
     pagination.itemCount = res.result.total ?? res.result.length
     pagination.pages = res.result.pages ?? 1
   }
-    // eslint-disable-next-line unused-imports/no-unused-vars
+  // eslint-disable-next-line unused-imports/no-unused-vars
   catch (error) {
     listData.value = []
     pagination.itemCount = 0

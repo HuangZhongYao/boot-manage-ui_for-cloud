@@ -17,7 +17,7 @@ export default {
 
   /**
    * 创建用户。
-   * @param {Object} data - 包含新用户信息的对象。
+   * @param {object} data - 包含新用户信息的对象。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
   create: data => request.post('/bm-user/user/addUser', data),
@@ -31,14 +31,14 @@ export default {
 
   /**
    * 更新用户信息。
-   * @param {Object} data - 包含待更新用户信息的对象，必须包含用户ID。
+   * @param {object} data - 包含待更新用户信息的对象，必须包含用户ID。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
   update: data => request.patch(`/bm-user/user/editUser`, data),
 
   /**
    * 删除指定ID的用户。
-   * @param {Object} data - 待删除用户的ID。
+   * @param {object} data - 待删除用户的ID。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
   delete: data => request.delete('/bm-user/user/delUser', { data }),
@@ -46,7 +46,7 @@ export default {
   /**
    * 重置指定ID用户的密码。
    * @param {string|number} id - 用户ID。
-   * @param {Object} data - 包含新密码信息的对象。
+   * @param {object} data - 包含新密码信息的对象。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
   resetPwd: (id, data) => request.patch(`/bm-user/user/resetPassword`, data),

@@ -35,7 +35,7 @@ import { useAppStore, useTabStore } from '@/store'
 /**
  * 使用Map缓存布局组件，以避免重复加载。
  * @param {string} name - 布局的名称。
- * @returns {Object} - 对应布局的Vue组件。
+ * @returns {object} - 对应布局的Vue组件。
  */
 const layouts = new Map()
 function getLayout(name) {
