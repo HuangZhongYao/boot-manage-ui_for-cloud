@@ -34,7 +34,7 @@ const props = defineProps({
 const emit = defineEmits(['update'])
 // 挂载函数
 onMounted(() => {
-  initData()
+  loadOrgTreeData()
 })
 // 模态框ref
 const modalRef = ref(null)
@@ -42,17 +42,34 @@ const modalRef = ref(null)
 const checkedDataRef = ref(props.checkedData || [])
 
 // 组织树结构数据
-const treeData = ref([])
+const orgTreeData = ref([])
 // 树当前选中节点
-const currentNode = ref(null)
-// 用户tab搜索状态
-const userSearchPattern = ref('')
-// 部门tab搜索状态
-const orgSearchPattern = ref('')
+const selectedOrgNode = ref(null)
+// 用户 Tab 树搜索关键词
+const userTreeSearch = ref('')
+// 部门 Tab 树搜索关键词
+const orgTreeSearch = ref('')
+// 防抖后的搜索关键词
+const debouncedUserTreeSearch = ref('')
+const debouncedOrgTreeSearch = ref('')
+let userDebounceTimer = null
+let orgDebounceTimer = null
+watch(userTreeSearch, (val) => {
+  clearTimeout(userDebounceTimer)
+  userDebounceTimer = setTimeout(() => {
+    debouncedUserTreeSearch.value = val
+  }, 300)
+})
+watch(orgTreeSearch, (val) => {
+  clearTimeout(orgDebounceTimer)
+  orgDebounceTimer = setTimeout(() => {
+    debouncedOrgTreeSearch.value = val
+  }, 300)
+})
 // 树选中节点key
-const checkedTreeKey = ref(checkedDataRef.value.filter(item => item.type === checkedType.organization).map(item => item.id))
+const selectedOrgKeys = ref(checkedDataRef.value.filter(item => item.type === checkedType.organization).map(item => item.id))
 // 树设置项
-const treeOption = ref({
+const orgTreeOptions = ref({
   treeLoading: true,
   bodyStyle: {
     width: '600px',
@@ -80,14 +97,14 @@ const pagination = reactive({
   },
 })
 // 表格选择的行key
-const checkedRowKeysRef = ref(checkedDataRef.value.filter(item => item.type === checkedType.user).map(item => item.id))
-const genders = [
+const selectedUserRowKeys = ref(checkedDataRef.value.filter(item => item.type === checkedType.user).map(item => item.id))
+const genderOptions = [
   { label: '男', value: 'MALE' },
   { label: '女', value: 'FEMALE' },
   { label: '保密', value: 'UNKNOWN' },
 ]
 // 表格设置项
-const tableOption = ref({
+const userTableOptions = ref({
   columns:
     [
       {
@@ -132,7 +149,7 @@ const tableOption = ref({
       {
         title: '性别',
         key: 'gender',
-        render: ({ gender }) => genders.find(item => gender === item.value)?.label ?? '',
+        render: ({ gender }) => genderOptions.find(item => gender === item.value)?.label ?? '',
       },
       {
         title: '状态',
@@ -156,39 +173,39 @@ const tableOption = ref({
   loading: false,
 })
 // 表格数据
-const tableData = ref([])
+const userTableData = ref([])
 
 /**
  * 加载当前选择节点的用户数据
  */
-async function loadUserData() {
+async function loadUsersByOrg() {
   // 未选中节点不查询
-  if (!currentNode.value) {
+  if (!selectedOrgNode.value) {
     return
   }
   // 显示加载层
-  tableOption.value.loading = true
+  userTableOptions.value.loading = true
 
   try {
     // 请求用户数据
     const res = await userApi.read({
       pageNo: pagination.page,
       pageSize: pagination.pageSize,
-      organizationId: currentNode.value.id || '',
+      organizationId: selectedOrgNode.value.id || '',
     })
     // 设置表格
-    tableData.value = res?.result?.records || []
+    userTableData.value = res?.result?.records || []
     // 设置分页数据
     pagination.itemCount = res?.result?.total || 0
   }
   catch (error) {
     console.error('加载用户数据失败:', error)
-    tableData.value = []
+    userTableData.value = []
     pagination.itemCount = 0
   }
   finally {
     // 关闭加载层
-    tableOption.value.loading = false
+    userTableOptions.value.loading = false
   }
 }
 
@@ -196,21 +213,21 @@ async function loadUserData() {
  * 获取树数据
  * @returns {Promise<void>}
  */
-async function initData() {
+async function loadOrgTreeData() {
   // 显示树加载层
-  treeOption.value.treeLoading = true
+  orgTreeOptions.value.treeLoading = true
   try {
     // 请求树结构数据
     const res = await api.organizationTree()
-    treeData.value = res?.result || []
+    orgTreeData.value = res?.result || []
   }
   catch (error) {
     console.error('加载组织架构失败:', error)
-    treeData.value = []
+    orgTreeData.value = []
   }
   finally {
     // 关闭树加载层
-    treeOption.value.treeLoading = false
+    orgTreeOptions.value.treeLoading = false
   }
 }
 
@@ -221,12 +238,12 @@ async function initData() {
  * @param action
  * @param node
  */
-function onSelect(keys, option, { node }) {
-  currentNode.value = node
+function handleOrgTreeSelect(keys, option, { node }) {
+  selectedOrgNode.value = node
   // 重置分页
   pagination.page = 1
   // 加载数据
-  loadUserData()
+  loadUsersByOrg()
 }
 
 /**
@@ -234,7 +251,7 @@ function onSelect(keys, option, { node }) {
  * @param option
  * @returns {VNode}
  */
-function organizationRenderLabel(option) {
+function renderOrgLabel(option) {
   // 组织禁用则禁止选择
   option.option.checkboxDisabled = option.option.enable === false
   option.option.disabled = option.option.enable === false
@@ -255,7 +272,7 @@ function organizationRenderLabel(option) {
  * @param option 选中选项数组
  * @param node 选中的节点对象
  */
-function onOrganizationSelectChecked(keys, option, { node }) {
+function handleOrgSelectionChange(keys, option, { node }) {
   // 从 option 中提取新的选中数据
   const newOrganizationData = option.map(row => ({
     id: row.id,
@@ -263,7 +280,7 @@ function onOrganizationSelectChecked(keys, option, { node }) {
     type: checkedType.organization,
   }))
   // 添加到 checkedDataRef 中
-  addCheckedData(checkedType.organization, newOrganizationData)
+  upsertSelectedByType(checkedType.organization, newOrganizationData)
 }
 
 /**
@@ -283,10 +300,10 @@ function renderSwitcherIcon(treeOption) {
 /**
  * 表格选中回调
  */
-function handleCheckedRowChange() {
+function handleUserSelectionChange() {
   // 获取当前选中的行数据
-  const selectedRows = tableData.value.filter(row =>
-    checkedRowKeysRef.value.includes(row.id),
+  const selectedRows = userTableData.value.filter(row =>
+    selectedUserRowKeys.value.includes(row.id),
   )
   // 从 selectedRows 中提取新的 type: 'USER' 数据
   const newUserData = selectedRows.map(row => ({
@@ -295,7 +312,7 @@ function handleCheckedRowChange() {
     type: checkedType.user,
   }))
   // 添加到 checkedDataRef 中
-  addCheckedData(checkedType.user, newUserData)
+  upsertSelectedByType(checkedType.user, newUserData)
 }
 
 /**
@@ -303,7 +320,7 @@ function handleCheckedRowChange() {
  * @param type  类型
  * @param data  数据
  */
-function addCheckedData(type, data) {
+function upsertSelectedByType(type, data) {
   // 清理 checkedDataRef 中原有的 type === type 数据
   const cleanedCheckedData = checkedDataRef.value.filter(item => item.type !== type)
   // 合并清理后的旧数据 + 新数据
@@ -315,11 +332,11 @@ function addCheckedData(type, data) {
  * 移除选中数据
  * @param id  id
  */
-function removeCheckedData(id) {
+function removeSelectedById(id) {
   // 移除 checkedRowKeysRef.value 中 id === id 的数据
-  checkedRowKeysRef.value = checkedRowKeysRef.value.filter(item => item !== id)
+  selectedUserRowKeys.value = selectedUserRowKeys.value.filter(item => item !== id)
   // 移除 checkedTreeKey.value 中 id === id 的数据
-  checkedTreeKey.value = checkedTreeKey.value.filter(item => item !== id)
+  selectedOrgKeys.value = selectedOrgKeys.value.filter(item => item !== id)
   // 清理 checkedDataRef 中原有的 id === id 数据
   checkedDataRef.value = checkedDataRef.value.filter(item => item.id !== id)
   // 发送事件
@@ -330,7 +347,7 @@ function removeCheckedData(id) {
  * @param type 类型
  * @returns {UnwrapRefSimple<*>[]}
  */
-function filterCheckedData(type) {
+function getSelectedByType(type) {
   return checkedDataRef.value.filter(item => item.type === type)
 }
 defineExpose({
@@ -346,14 +363,14 @@ defineExpose({
     <n-space class="h-7vh overflow-y-auto">
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in filterCheckedData(checkedType.user)" :key="item.id" closable type="success" @close="removeCheckedData(item.id)">
+          <NTag v-for="item in filterCheckedData(checkedType.user)" :key="item.id" closable type="success" size="small" :bordered="false" class="mr-6 mb-6" @close="removeCheckedData(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
       </n-space>
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in filterCheckedData(checkedType.organization)" :key="item.id" closable type="info" @close="removeCheckedData(item.id)">
+          <NTag v-for="item in filterCheckedData(checkedType.organization)" :key="item.id" closable type="info" size="small" :bordered="false" class="mr-6 mb-6" @close="removeCheckedData(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
@@ -364,7 +381,7 @@ defineExpose({
     <n-space class="h-7vh overflow-y-auto">
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in filterCheckedData(checkedType.user)" :key="item.id" closable type="success" @close="removeCheckedData(item.id)">
+          <NTag v-for="item in filterCheckedData(checkedType.user)" :key="item.id" closable type="success" size="small" :bordered="false" class="mr-6 mb-6" @close="removeCheckedData(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
@@ -392,7 +409,7 @@ defineExpose({
               <n-tree
                 class="hide-scrollbar h-70vh overflow-y-auto"
                 :show-irrelevant-nodes="false"
-                :pattern="userSearchPattern"
+                :pattern="debouncedUserPattern"
                 :data="treeData"
                 :selected-keys="[currentNode?.id]"
                 :render-switcher-icon="renderSwitcherIcon"
@@ -417,6 +434,8 @@ defineExpose({
               :loading="tableOption.loading"
               :data="tableData"
               :pagination="pagination"
+              :max-height="560"
+              virtual-scroll
               @update:checked-row-keys="handleCheckedRowChange"
             />
           </n-flex>
@@ -436,7 +455,7 @@ defineExpose({
               :checked-keys="checkedTreeKey"
               class="hide-scrollbar h-70vh overflow-y-auto"
               :show-irrelevant-nodes="false"
-              :pattern="orgSearchPattern"
+              :pattern="debouncedOrgPattern"
               :data="treeData"
               :render-label="organizationRenderLabel"
               :render-switcher-icon="renderSwitcherIcon"
