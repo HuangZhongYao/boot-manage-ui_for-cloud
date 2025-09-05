@@ -363,14 +363,14 @@ defineExpose({
     <n-space class="h-7vh overflow-y-auto">
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in filterCheckedData(checkedType.user)" :key="item.id" closable type="success" size="small" :bordered="false" class="mr-6 mb-6" @close="removeCheckedData(item.id)">
+          <NTag v-for="item in getSelectedByType(checkedType.user)" :key="item.id" closable type="success" size="small" :bordered="false" class="mr-6 mb-6" @close="removeSelectedById(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
       </n-space>
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in filterCheckedData(checkedType.organization)" :key="item.id" closable type="info" size="small" :bordered="false" class="mr-6 mb-6" @close="removeCheckedData(item.id)">
+          <NTag v-for="item in getSelectedByType(checkedType.organization)" :key="item.id" closable type="info" size="small" :bordered="false" class="mr-6 mb-6" @close="removeSelectedById(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
@@ -381,14 +381,14 @@ defineExpose({
     <n-space class="h-7vh overflow-y-auto">
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in filterCheckedData(checkedType.user)" :key="item.id" closable type="success" size="small" :bordered="false" class="mr-6 mb-6" @close="removeCheckedData(item.id)">
+          <NTag v-for="item in getSelectedByType(checkedType.user)" :key="item.id" closable type="success" size="small" :bordered="false" class="mr-6 mb-6" @close="removeSelectedById(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
       </n-space>
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in filterCheckedData(checkedType.organization)" :key="item.id" closable type="info" @close="removeCheckedData(item.id)">
+          <NTag v-for="item in getSelectedByType(checkedType.organization)" :key="item.id" closable type="info" size="small" :bordered="false" class="mr-6 mb-6" @close="removeSelectedById(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
@@ -400,21 +400,21 @@ defineExpose({
           <n-flex vertical :size="[46, 10]">
             <h3>组织架构</h3>
             <div class="flex">
-              <n-input v-model:value="userSearchPattern" placeholder="搜索" clearable />
-              <NButton class="ml-12" type="primary" ghost quaternary @click="initData">
+              <n-input v-model:value="userTreeSearch" placeholder="搜索" clearable />
+              <NButton class="ml-12" type="primary" ghost quaternary @click="loadOrgTreeData">
                 <i class="i-fe:rotate-ccw mr-4 text-14" />
               </NButton>
             </div>
-            <n-spin size="small" :show="treeOption.treeLoading">
+            <n-spin size="small" :show="orgTreeOptions.treeLoading">
               <n-tree
                 class="hide-scrollbar h-70vh overflow-y-auto"
                 :show-irrelevant-nodes="false"
-                :pattern="debouncedUserPattern"
-                :data="treeData"
-                :selected-keys="[currentNode?.id]"
+                :pattern="debouncedUserTreeSearch"
+                :data="orgTreeData"
+                :selected-keys="[selectedOrgNode?.id]"
                 :render-switcher-icon="renderSwitcherIcon"
-                :render-label="organizationRenderLabel"
-                :on-update:selected-keys="onSelect"
+                :render-label="renderOrgLabel"
+                :on-update:selected-keys="handleOrgTreeSelect"
                 key-field="id"
                 label-field="name"
 
@@ -424,19 +424,19 @@ defineExpose({
           </n-flex>
           <n-flex vertical class="hide-scrollbar ml-20 h-80vh flex-1 overflow-y-auto" style="flex-grow: 2">
             <n-flex inline justify="space-between">
-              <h3>{{ currentNode?.name }}</h3>
+              <h3>{{ selectedOrgNode?.name }}</h3>
             </n-flex>
             <NDataTable
-              v-model:checked-row-keys="checkedRowKeysRef"
+              v-model:checked-row-keys="selectedUserRowKeys"
               :row-key="row => row.id"
               :remote="true"
-              :columns="tableOption.columns"
-              :loading="tableOption.loading"
-              :data="tableData"
+              :columns="userTableOptions.columns"
+              :loading="userTableOptions.loading"
+              :data="userTableData"
               :pagination="pagination"
               :max-height="560"
               virtual-scroll
-              @update:checked-row-keys="handleCheckedRowChange"
+              @update:checked-row-keys="handleUserSelectionChange"
             />
           </n-flex>
         </n-flex>
@@ -445,21 +445,21 @@ defineExpose({
         <n-flex vertical :size="[46, 10]">
           <h3>组织选择</h3>
           <div class="flex">
-            <n-input v-model:value="orgSearchPattern" placeholder="搜索" clearable />
-            <NButton class="ml-12" type="primary" ghost quaternary @click="initData">
+            <n-input v-model:value="orgTreeSearch" placeholder="搜索" clearable />
+            <NButton class="ml-12" type="primary" ghost quaternary @click="loadOrgTreeData">
               <i class="i-fe:rotate-ccw mr-4 text-14" />
             </NButton>
           </div>
-          <n-spin size="small" :show="treeOption.treeLoading">
+          <n-spin size="small" :show="orgTreeOptions.treeLoading">
             <n-tree
-              :checked-keys="checkedTreeKey"
+              :checked-keys="selectedOrgKeys"
               class="hide-scrollbar h-70vh overflow-y-auto"
               :show-irrelevant-nodes="false"
-              :pattern="debouncedOrgPattern"
-              :data="treeData"
-              :render-label="organizationRenderLabel"
+              :pattern="debouncedOrgTreeSearch"
+              :data="orgTreeData"
+              :render-label="renderOrgLabel"
               :render-switcher-icon="renderSwitcherIcon"
-              :on-update:checked-keys="onOrganizationSelectChecked"
+              :on-update:checked-keys="handleOrgSelectionChange"
               key-field="id"
               label-field="name"
               default-expand-all
