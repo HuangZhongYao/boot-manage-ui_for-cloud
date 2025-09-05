@@ -23,16 +23,22 @@
         @click="handleLinkClick('https://gitee.com/smog_huang/boot-manage-ui')"
       />
       <ThemeSetting class="mr-16" />
-      <n-badge class="mr-16" size="small" value="12" :max="99" processing @click="showMyNotice = !showMyNotice">
+      <n-badge class="mr-16" size="small" :value="notificationsRecordCount" :max="99" processing @click="showMyNotice = !showMyNotice">
         <i class="i-fe:bell hover:cursor-pointer" />
       </n-badge>
       <UserAvatar class="mr-16" />
       <n-drawer v-model:show="showMyNotice" width="50vh" close-on-esc placement="right" resizable>
         <n-drawer-content closable>
           <template #header>
-            <i class="i-fe:bell hover:cursor-pointer" /> 通知
+            <div class="flex items-center">
+              <i class="i-fe:bell" />
+              <span class="ml-1vh">我的通知</span>
+              <n-tag type="info" round size="small" bordered="false" class=" ml-1vh  font-size-1vh">
+                共 {{ notificationsRecordCount }} 条
+              </n-tag>
+            </div>
           </template>
-          <MyNotice />
+          <MyNotice @update="(val) => notificationsRecordCount = val " />
         </n-drawer-content>
       </n-drawer>
     </div>
@@ -45,6 +51,7 @@ import { AppTab, Fullscreen, MenuCollapse, UserAvatar } from '@/layouts/componen
 import MyNotice from '@/views/notice/my-notice/index.vue'
 
 const showMyNotice = ref(false)
+const notificationsRecordCount = ref(0)
 
 function handleLinkClick(link) {
   window.open(link)

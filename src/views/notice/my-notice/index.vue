@@ -3,7 +3,8 @@ import api from './api.js'
 
 // 定义组件名称（用于 keepAlive，与菜单 code 一致）
 defineOptions({ name: 'MyNotice' })
-
+// 定义更新事件
+const emit = defineEmits(['update'])
 // 查询参数（可选）
 const queryItems = ref({})
 
@@ -84,6 +85,8 @@ async function handleQuery() {
     // 分页信息
     pagination.itemCount = res.result.total ?? res.result.length
     pagination.pages = res.result.pages ?? 1
+
+    onUpdateItemCount()
   }
   // eslint-disable-next-line unused-imports/no-unused-vars
   catch (error) {
@@ -129,6 +132,8 @@ function handleDelete(item) {
           const index = listData.value.findIndex(i => i.id === item.id)
           if (index > -1) {
             listData.value.splice(index, 1)
+            pagination.itemCount = pagination.itemCount - 1
+            onUpdateItemCount()
           }
         }
         else {
@@ -145,6 +150,10 @@ function handleDelete(item) {
   }, 300) // 动画时长，与 CSS 中 transition 保持一致
 }
 
+function onUpdateItemCount() {
+  emit('update', pagination.itemCount)
+}
+
 // 页面加载时查询数据
 onMounted(() => {
   handleQuery()
@@ -152,13 +161,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- 顶部统计（移至最顶部） -->
-  <div class="mb-8 w-full flex justify-end">
-    <n-tag type="info" round size="small">
-      共 {{ pagination.itemCount }} 条
-    </n-tag>
-  </div>
-
   <!-- 加载骨架屏 -->
   <n-skeleton v-if="loading" text :repeat="5" class="mb-8" />
 
@@ -166,7 +168,7 @@ onMounted(() => {
   <n-empty v-else-if="showEmpty" description="暂无通知" class="py-10" />
 
   <!-- 通知列表 -->
-  <n-list v-else hoverable clickable bordered class="mb-24 border-x-0">
+  <n-list v-else hoverable clickable bordered class="border-none">
     <Transition
       v-for="item in listData"
       :key="item.id"
@@ -194,12 +196,12 @@ onMounted(() => {
               <n-ellipsis>{{ item.title }}</n-ellipsis>
             </div>
             <div class="meta flex items-center gap-2 text-12 color-#999">
+              <n-time :time="item.createdTime" />
               <n-tag size="small" round :type="getTypeInfo(item).type" class="origin-left scale-85 opacity-90">
                 <n-ellipsis line-clamp="1">
                   {{ getTypeInfo(item).label }}
                 </n-ellipsis>
               </n-tag>
-              <n-time :time="item.createdTime" />
             </div>
           </div>
 
