@@ -21,7 +21,7 @@ function getTypeInfo(item) {
   const label = item.typeName || item.type || item.category || '系统'
   // 简单的类型到颜色映射，可继续扩展
   const map = {
-    系统: 'success',
+    SYSTEM: 'success',
     公告: 'info',
     告警: 'error',
     提醒: 'warning',

@@ -76,10 +76,11 @@ import Vcode from 'vue3-puzzle-vcode'
 import { useRoute, useRouter } from 'vue-router'
 import api from './api'
 import { lStorage } from '@/utils'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useSystemStore } from '@/store'
 import { TheFooter } from '@/components/index.js'
 
 const authStore = useAuthStore()
+const systemStore = useSystemStore()
 const router = useRouter()
 const route = useRoute()
 const title = import.meta.env.VITE_TITLE
@@ -155,6 +156,7 @@ async function handleLogin() {
  */
 async function onLoginSuccess(data = {}) {
   authStore.setToken(data)
+  systemStore.loadDictionaryData()
   $message.loading('登录中...', { key: 'login' })
   try {
     $message.success('登录成功', { key: 'login' })

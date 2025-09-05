@@ -94,6 +94,27 @@
           <n-input v-model:value="modalForm.password" />
         </n-form-item>
 
+        <n-form-item
+          v-if="['add', 'org'].includes(modalAction)"
+          label="所属组织"
+          path="organizationId"
+          :rule="{
+            required: true,
+            message: '请选择所属组织',
+            trigger: ['input', 'blur'],
+          }"
+        >
+          <n-tree-select
+            v-model:value="modalForm.organizationId"
+            :options="menuOptions"
+            :disabled="parentIdDisabled"
+            label-field="name"
+            key-field="id"
+            placeholder="根组织"
+            clearable
+          />
+        </n-form-item>
+
         <n-form-item v-if="['add', 'setRole'].includes(modalAction)" label="角色" path="roleIds">
           <n-select
             v-model:value="modalForm.roleIds"

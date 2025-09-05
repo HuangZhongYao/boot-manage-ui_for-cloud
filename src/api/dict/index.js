@@ -13,4 +13,10 @@ export default {
    * @returns {*}
    */
   getDictDataQueryListByCode: (params = {}) => request.get('/bm-system/dict/dictDataQueryListByDictTypeCode', { params }),
+  /**
+   * 获取所有字典数据
+   * @param params
+   * @returns {*}
+   */
+  getAllDictDataQueryList: (params = {}) => request.get('/bm-system/dict/allDictDataQueryList', { params }),
 }
