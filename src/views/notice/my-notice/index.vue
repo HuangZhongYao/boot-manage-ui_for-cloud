@@ -12,6 +12,32 @@ const loading = ref(false)
 
 // 列表数据
 const listData = ref([])
+// 空状态判定
+const showEmpty = computed(() => !loading.value && listData.value.length === 0)
+
+// 类型映射（可根据后端字段自适应）
+function getTypeInfo(item) {
+  const label = item.typeName || item.type || item.category || '系统'
+  // 简单的类型到颜色映射，可继续扩展
+  const map = {
+    系统: 'success',
+    公告: 'info',
+    告警: 'error',
+    提醒: 'warning',
+  }
+  const type = map[label] || 'default'
+  return { label, type }
+}
+
+// 禁止背景滚动（进入页面时）
+let prevBodyOverflow = ''
+onMounted(() => {
+  prevBodyOverflow = document.body.style.overflow
+  document.body.style.overflow = 'hidden'
+})
+onUnmounted(() => {
+  document.body.style.overflow = prevBodyOverflow
+})
 
 // 分页配置
 const pagination = reactive({
@@ -126,8 +152,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <n-list hoverable clickable>
-    <!-- 每个列表项包裹 Transition，实现删除动画 -->
+  <!-- 顶部统计（移至最顶部） -->
+  <div class="mb-8 w-full flex justify-end">
+    <n-tag type="info" round size="small">
+      共 {{ pagination.itemCount }} 条
+    </n-tag>
+  </div>
+
+  <!-- 加载骨架屏 -->
+  <n-skeleton v-if="loading" text :repeat="5" class="mb-8" />
+
+  <!-- 空状态 -->
+  <n-empty v-else-if="showEmpty" description="暂无通知" class="py-10" />
+
+  <!-- 通知列表 -->
+  <n-list v-else hoverable clickable bordered class="mb-24 border-x-0">
     <Transition
       v-for="item in listData"
       :key="item.id"
@@ -137,60 +176,97 @@ onMounted(() => {
       <n-list-item
         v-if="item._visible !== false"
         :key="item.id"
-        class="group"
+        class="group my-notice-item rounded-8 px-2 py-1"
       >
-        <n-flex justify="space-between">
-          <n-badge :value="item.readState ? 0 : 1" :dot="!item.readState">
-            {{ item.title }}
-          </n-badge>
-          <n-space
-            class="visibility-hidden group-hover:visibility-visible opacity-0 transition-all duration-700 group-hover:opacity-100"
-            :size="[1, 0]"
-          >
-            <n-button
-              quaternary
-              round
-              @click="readRecords({ ids: [item.id], readAll: false }, item)"
+        <div class="notice-row">
+          <!-- 图标列 -->
+          <div class="flex items-center justify-center">
+            <n-badge :value="item.readState ? 0 : 1" :dot="!item.readState">
+              <n-avatar size="small" class="bg-primary:10 text-primary">
+                <i class="i-fe:bell" />
+              </n-avatar>
+            </n-badge>
+          </div>
+
+          <!-- 标题与时间（自适应） -->
+          <div class="content-col">
+            <div class="title line-height-24">
+              <n-ellipsis>{{ item.title }}</n-ellipsis>
+            </div>
+            <div class="meta flex items-center gap-2 text-12 color-#999">
+              <n-tag size="small" round :type="getTypeInfo(item).type" class="origin-left scale-85 opacity-90">
+                <n-ellipsis line-clamp="1">
+                  {{ getTypeInfo(item).label }}
+                </n-ellipsis>
+              </n-tag>
+              <n-time :time="item.createdTime" />
+            </div>
+          </div>
+
+          <!-- 操作列 -->
+          <div class="action-col">
+            <n-space
+              class="visibility-hidden group-hover:visibility-visible opacity-0 transition-all duration-500 group-hover:opacity-100"
+              :size="4"
             >
-              <template #icon>
-                <i class="i-fe:check" />
-              </template>
-            </n-button>
-            <n-button
-              quaternary
-              round
-              @click="handleDelete(item)"
-            >
-              <template #icon>
-                <i class="i-fe:x" />
-              </template>
-            </n-button>
-          </n-space>
-        </n-flex>
-        <n-time :time="item.createdTime" class="mr-10 font-size-13" />
-        <n-tag size="small" round type="success">
-          系统
-        </n-tag>
+              <n-tooltip trigger="hover">
+                <template #trigger>
+                  <n-button
+                    quaternary
+                    round
+                    @click="readRecords({ ids: [item.id], readAll: false }, item)"
+                  >
+                    <template #icon>
+                      <i class="i-fe:check" />
+                    </template>
+                  </n-button>
+                </template>
+                标记已读
+              </n-tooltip>
+
+              <n-tooltip trigger="hover">
+                <template #trigger>
+                  <n-button
+                    quaternary
+                    round
+                    type="error"
+                    @click="handleDelete(item)"
+                  >
+                    <template #icon>
+                      <i class="i-fe:x" />
+                    </template>
+                  </n-button>
+                </template>
+                删除
+              </n-tooltip>
+            </n-space>
+          </div>
+        </div>
       </n-list-item>
     </Transition>
   </n-list>
 
-  <!-- 分页组件 -->
-  <n-pagination
-    v-model:page="pagination.page"
-    v-model:page-size="pagination.pageSize"
-    :page-count="pagination.pages"
-    class="pos-absolute bottom-1vh w-full justify-center"
-    @update:page-size="pagination.onUpdatePageSize"
-    @update:page="pagination.onChange"
+  <!-- 分页组件（底部粘性） -->
+  <div
+    class="pointer-events-auto sticky bottom-0 z-40 w-full flex justify-center overscroll-contain border-t bg-white/90 py-8 backdrop-blur-md dark:bg-#121212/90"
+    @wheel.capture.stop.prevent
+    @touchmove.capture.stop.prevent
   >
-    <template #prev>
-      <
-    </template>
-    <template #next>
-      >
-    </template>
-  </n-pagination>
+    <n-pagination
+      v-model:page="pagination.page"
+      v-model:page-size="pagination.pageSize"
+      :page-count="pagination.pages"
+      @update:page-size="pagination.onUpdatePageSize"
+      @update:page="pagination.onChange"
+    >
+      <template #prev>
+        &lt;
+      </template>
+      <template #next>
+        &gt;
+      </template>
+    </n-pagination>
+  </div>
 </template>
 
 <style scoped>
@@ -210,5 +286,34 @@ onMounted(() => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* 卡片与列表的细节样式 */
+.my-notice-item {
+  transition:
+    box-shadow 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.my-notice-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+/* 网格对齐：icon 40px / type 72px / content 自适应 / action 92px */
+.notice-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 92px;
+  align-items: center;
+  gap: 8px;
+}
+
+.content-col .title :deep(.n-ellipsis) {
+  font-weight: 600;
+}
+
+.action-col {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
