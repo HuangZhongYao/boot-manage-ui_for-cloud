@@ -27,7 +27,7 @@
         <DictSelect v-model:value="modalForm.state" dict-type-code="NOTICE_STATE" :default-value="modalForm.type ? modalForm.type : modalForm.type = `mysql`" clearable />
       </MeQueryItem>
     </MeCrud>
-    <MeModal ref="modalRef" width="60%" :mask-closable="false">
+    <MeModal ref="modalRef" width="60%" class="h-95vh" :mask-closable="false">
       <n-form
         ref="modalFormRef"
         label-placement="left"
