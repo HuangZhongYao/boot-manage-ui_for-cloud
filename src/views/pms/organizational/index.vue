@@ -24,6 +24,7 @@
             :pattern="treeOption.pattern"
             :data="treeData"
             :selected-keys="[currentNode?.id]"
+            :render-label="renderLabel"
             :render-switcher-icon="renderSwitcherIcon"
             :render-prefix="renderPrefix"
             :render-suffix="renderSuffix"
@@ -461,6 +462,22 @@ function onSelect(keys, option, { action, node }) {
   currentNode.value = node
   // 加载数据
   loadUserData()
+}
+/**
+ * 树节点内容渲染函数
+ * @param option
+ * @returns {VNode}
+ */
+function renderLabel(option) {
+  return h(
+    'span',
+    {
+      style: option.option.enable ? '' : 'color: grey;',
+    },
+    {
+      default: () => option.option.name,
+    },
+  )
 }
 
 /**
