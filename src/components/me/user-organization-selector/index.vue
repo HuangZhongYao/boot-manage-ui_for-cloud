@@ -89,11 +89,11 @@ const pagination = reactive({
   },
   onChange: (page) => {
     pagination.page = page
-    loadUserData()
+    loadUsersByOrg()
   },
   onUpdatePageSize: (pageSize) => {
     pagination.pageSize = pageSize
-    loadUserData()
+    loadUsersByOrg()
   },
 })
 // 表格选择的行key
@@ -253,12 +253,11 @@ function handleOrgTreeSelect(keys, option, { node }) {
  */
 function renderOrgLabel(option) {
   // 组织禁用则禁止选择
-  option.option.checkboxDisabled = option.option.enable === false
   option.option.disabled = option.option.enable === false
   return h(
     'span',
     {
-      style: option.option.enable ? '' : 'color: red;',
+      style: option.option.enable ? '' : 'color: grey;',
     },
     {
       default: () => option.option.name,

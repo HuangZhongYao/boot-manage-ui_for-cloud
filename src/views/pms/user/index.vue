@@ -9,7 +9,7 @@
 <template>
   <CommonPage>
     <template #action>
-      <NButton v-permission="'AddUser'" size="small" type="primary" @click="handleAdd()">
+      <NButton v-permission="'AddUser'" size="small" type="primary" @click="addUser()">
         <i class="i-material-symbols:add mr-4 text-18" />
         创建用户
       </NButton>
@@ -106,11 +106,12 @@
         >
           <n-tree-select
             v-model:value="modalForm.organizationId"
-            :options="menuOptions"
-            :disabled="parentIdDisabled"
+            :options="organizationalTreeOptions"
+            :disabled="modalAction === 'view'"
+            :render-label="organizationalTreeRenderLabel"
             label-field="name"
             key-field="id"
-            placeholder="根组织"
+            placeholder="选择所属组织"
             clearable
           />
         </n-form-item>
@@ -190,6 +191,7 @@
 
 <script setup>
 import { NAvatar, NButton, NSwitch, NTag } from 'naive-ui'
+import organizationalApi from '../organizational/api'
 import api from './api'
 import isPermission from '@/utils/permissionsTool'
 import { formatDateTime } from '@/utils'
@@ -219,7 +221,8 @@ const selectRoleLoadingFlag = ref(false)
 const selectedRole = ref([])
 // 选择角色 角色选项数组
 let selectRoleOptions = []
-
+// 组织架构树选项数组
+const organizationalTreeOptions = ref([])
 /**
  * 点击分配用户按钮触发方法
  * @param row
@@ -327,7 +330,6 @@ const genders = [
   { label: '保密', value: 'UNKNOWN' },
 ]
 const roles = ref([])
-api.getAllRoles().then(({ result = [] }) => (roles.value = result))
 
 const {
   modalRef,
@@ -509,5 +511,43 @@ function onSave() {
     })
   }
   handleSave()
+}
+
+/**
+ * 新增用户
+ */
+function addUser() {
+  api.getAllRoles().then(({ result = [] }) => (roles.value = result))
+  loadOrganizationalTreeOptions()
+  handleAdd()
+}
+/**
+ * 加载组织树
+ */
+function loadOrganizationalTreeOptions() {
+  organizationalApi.organizationTree().then(({ result = [], success }) => {
+    if (success) {
+      organizationalTreeOptions.value = result
+    }
+  })
+}
+
+/**
+ * 组织树节点内容渲染
+ * @param option
+ * @returns {VNode}
+ */
+function organizationalTreeRenderLabel(option) {
+  // 组织禁用则禁止选择
+  option.option.disabled = option.option.enable === false
+  return h(
+    'span',
+    {
+      style: option.option.enable ? '' : 'color: grey',
+    },
+    {
+      default: () => option.option.name,
+    },
+  )
 }
 </script>
