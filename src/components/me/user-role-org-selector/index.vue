@@ -1,3 +1,9 @@
+<!--------------------------------
+ - 用户、角色、组织选择器
+ - @Author: zuuuYao
+ - @LastEditor: zuuuYao
+ - @LastEditTime: 2025/09/07 23:23:31
+ --------------------------------->
 <script setup>
 import { NAvatar, NButton, NDataTable, NIcon, NSwitch, NTag } from 'naive-ui'
 import { ChevronForward } from '@vicons/ionicons5'

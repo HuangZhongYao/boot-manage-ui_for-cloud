@@ -52,7 +52,7 @@
           label="通知对象"
           required
         >
-          <UserOrganizationSelector :disabled="modalAction === 'view'" :checked-data="modalForm.notificationsTargets" @update="handleOrganizationSelector" />
+          <UserRoleOrgSelector :disabled="modalAction === 'view'" :checked-data="modalForm.notificationsTargets" @update="handleOrganizationSelector" />
         </n-form-item>
       </n-form>
       <n-form>
@@ -76,7 +76,7 @@
 <script setup>
 import { NButton } from 'naive-ui'
 import api from './api.js'
-import { CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem, RichTextEditor, UserOrganizationSelector } from '@/components/index'
+import { CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem, RichTextEditor, UserRoleOrgSelector } from '@/components/index'
 import { useCrud } from '@/composables/index.js'
 import { formatDateTime } from '@/utils/index.js'
 
