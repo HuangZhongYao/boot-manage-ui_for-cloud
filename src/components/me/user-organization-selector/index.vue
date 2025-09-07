@@ -5,6 +5,8 @@ import { checkedType } from './index.js'
 import api from '@/views/pms/organizational/api.js'
 import { MeModal } from '@/components/index.js'
 import userApi from '@/views/pms/user/api.js'
+import roleApi from '@/views/pms/role/api'
+import { formatDateTime } from '@/utils/index.js'
 // 定义组件名称
 defineOptions({ name: 'UserOrganizationSelector' })
 // 定义组件属性
@@ -19,15 +21,15 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  // 默认选中数据 数组时格式[{ id: id, name: name, type: type}]
+  // 默认选中数据 [{ id: id, name: name, type: type}]
   checkedData: {
     type: Array,
     default: () => [],
   },
-  // [checkedType.user, checkedType.organization, checkedType.role,] 选择范围 允许选择的类型 默认为用户, 当multiple是false时，只有第一个生效
+  // 选择范围允许选择的类型默认全部, 当multiple是false时只有第一个生效; [checkedType.user, checkedType.organization, checkedType.role]
   selectRange: {
     type: Array,
-    default: () => [checkedType.user],
+    default: () => [checkedType.user, checkedType.organization, checkedType.role],
   },
 })
 // 声明事件
@@ -35,6 +37,7 @@ const emit = defineEmits(['update'])
 // 挂载函数
 onMounted(() => {
   loadOrgTreeData()
+  loadRole()
 })
 // 模态框ref
 const modalRef = ref(null)
@@ -314,6 +317,109 @@ function handleUserSelectionChange() {
   upsertSelectedByType(checkedType.user, newUserData)
 }
 
+// 角色表格选择的行key
+const selectedRoleRowKeys = ref(checkedDataRef.value.filter(item => item.type === checkedType.role).map(item => item.id))
+// 角色表格设置项
+const roleTableOptions = ref({
+  columns:
+    [
+      {
+        type: 'selection',
+        disabled: ({ enable }) => enable === false,
+      },
+      {
+        title: '图标',
+        key: 'icon',
+        render: ({ icon }) =>
+          h(
+            'i',
+            {
+              class: icon,
+            },
+          ),
+      },
+      { title: '角色名', key: 'name' },
+      { title: '角色编码', key: 'code' },
+      {
+        title: '创建时间',
+        key: 'createdTime',
+        render(row) {
+          return h('span', formatDateTime(row.createdTime))
+        },
+      },
+      {
+        title: '状态',
+        key: 'enable',
+        render: ({ enable }) =>
+          h(
+            NTag,
+            {
+              round: true,
+              type: enable ? 'success' : 'error',
+            },
+            {
+              default: () => enable ? '启用' : '停用',
+            },
+          ),
+      },
+      { title: '备注', key: 'remark' },
+    ],
+  pagination: {
+    page: 1,
+    pageSize: 20,
+    pageSizes: [10, 20, 50, 100],
+    showSizePicker: false,
+    showQuickJumper: false,
+    displayOrder: ['pages', 'quick-jumper', 'size-picker'],
+    prefix({ itemCount }) {
+      return `共 ${itemCount} 条数据`
+    },
+    onChange: (page) => {
+      pagination.page = page
+      loadRole()
+    },
+    onUpdatePageSize: (pageSize) => {
+      pagination.pageSize = pageSize
+      loadRole()
+    },
+  },
+  loading: false,
+})
+// 角色表格数据
+const roleTableData = ref([])
+
+/**
+ * 加载角色数据
+ */
+function loadRole() {
+  roleApi.read({ pageNo: roleTableOptions.value.pagination.page, pageSize: roleTableOptions.value.pagination.pageSize })
+    .then((res) => {
+      roleTableData.value = res?.result?.records || []
+      roleTableOptions.value.pagination.itemCount = res?.result?.total || 0
+    }).catch(() => {
+      roleTableData.value = []
+      roleTableOptions.value.pagination.itemCount = 0
+    })
+}
+
+/**
+ * 处理角色表格勾选数据变化时
+ */
+function handleRoleSelectionChange() {
+  // 获取当前选中的行数据
+  const selectedRows = roleTableData.value.filter(row =>
+    selectedRoleRowKeys.value.includes(row.id),
+  )
+  // 从 selectedRows 中提取新的 type: 'ROLE' 数据
+  const newRoleData = selectedRows.map(row => ({
+    id: row.id,
+    name: row.name,
+    type: checkedType.role,
+  }))
+  // 添加到 checkedDataRef 中
+  upsertSelectedByType(checkedType.role, newRoleData)
+}
+
 /**
  * 添加选中数据
  * @param type  类型
@@ -362,14 +468,21 @@ defineExpose({
     <n-space class="h-7vh overflow-y-auto">
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in getSelectedByType(checkedType.user)" :key="item.id" closable type="success" size="small" :bordered="false" class="mr-6 mb-6" @close="removeSelectedById(item.id)">
+          <NTag v-for="item in getSelectedByType(checkedType.user)" :key="item.id" closable type="success" size="small" :bordered="false" class="mb-6 mr-6" @close="removeSelectedById(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
       </n-space>
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in getSelectedByType(checkedType.organization)" :key="item.id" closable type="info" size="small" :bordered="false" class="mr-6 mb-6" @close="removeSelectedById(item.id)">
+          <NTag v-for="item in getSelectedByType(checkedType.role)" :key="item.id" closable type="warning" size="small" :bordered="false" class="mb-6 mr-6" @close="removeSelectedById(item.id)">
+            {{ item.name }}
+          </NTag>
+        </TransitionGroup>
+      </n-space>
+      <n-space>
+        <TransitionGroup name="list" tag="ul">
+          <NTag v-for="item in getSelectedByType(checkedType.organization)" :key="item.id" closable type="info" size="small" :bordered="false" class="mb-6 mr-6" @close="removeSelectedById(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
@@ -380,21 +493,28 @@ defineExpose({
     <n-space class="h-7vh overflow-y-auto">
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in getSelectedByType(checkedType.user)" :key="item.id" closable type="success" size="small" :bordered="false" class="mr-6 mb-6" @close="removeSelectedById(item.id)">
+          <NTag v-for="item in getSelectedByType(checkedType.user)" :key="item.id" closable type="success" size="small" :bordered="false" class="mb-6 mr-6" @close="removeSelectedById(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
       </n-space>
       <n-space>
         <TransitionGroup name="list" tag="ul">
-          <NTag v-for="item in getSelectedByType(checkedType.organization)" :key="item.id" closable type="info" size="small" :bordered="false" class="mr-6 mb-6" @close="removeSelectedById(item.id)">
+          <NTag v-for="item in getSelectedByType(checkedType.role)" :key="item.id" closable type="warning" size="small" :bordered="false" class="mb-6 mr-6" @close="removeSelectedById(item.id)">
+            {{ item.name }}
+          </NTag>
+        </TransitionGroup>
+      </n-space>
+      <n-space>
+        <TransitionGroup name="list" tag="ul">
+          <NTag v-for="item in getSelectedByType(checkedType.organization)" :key="item.id" closable type="info" size="small" :bordered="false" class="mb-6 mr-6" @close="removeSelectedById(item.id)">
             {{ item.name }}
           </NTag>
         </TransitionGroup>
       </n-space>
     </n-space>
-    <n-tabs type="line" animated>
-      <n-tab-pane name="user" tab="用户">
+    <n-tabs type="line" class="h-70vh" animated>
+      <n-tab-pane name="user" tab="用户" :disabled="!props.selectRange.includes(checkedType.user)">
         <n-flex justify="space-between">
           <n-flex vertical :size="[46, 10]">
             <h3>组织架构</h3>
@@ -440,7 +560,21 @@ defineExpose({
           </n-flex>
         </n-flex>
       </n-tab-pane>
-      <n-tab-pane name="organization" tab="组织">
+      <n-tab-pane name="role" tab="角色" :disabled="!props.selectRange.includes(checkedType.role)">
+        <NDataTable
+          v-model:checked-row-keys="selectedRoleRowKeys"
+          :row-key="row => row.id"
+          :remote="true"
+          :columns="roleTableOptions.columns"
+          :loading="roleTableOptions.loading"
+          :data="roleTableData"
+          :pagination="roleTableOptions.pagination"
+          :max-height="560"
+          virtual-scroll
+          @update:checked-row-keys="handleRoleSelectionChange"
+        />
+      </n-tab-pane>
+      <n-tab-pane name="organization" tab="组织" :disabled="!props.selectRange.includes(checkedType.organization)">
         <n-flex vertical :size="[46, 10]">
           <h3>组织选择</h3>
           <div class="flex">
@@ -468,7 +602,6 @@ defineExpose({
           </n-spin>
         </n-flex>
       </n-tab-pane>
-      <n-tab-pane name="role" tab="角色" />
     </n-tabs>
   </MeModal>
 </template>
