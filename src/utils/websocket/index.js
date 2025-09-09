@@ -3,6 +3,14 @@ import SockJS from 'sockjs-client'
 // 导入STOMP.js库，用于处理STOMP协议的消息通信
 import { Client } from '@stomp/stompjs'
 
+// 订阅主题
+const topic = {
+  // 通知广播主题
+  notificationTopic: '/topic/notificationsMessages',
+  // 用户个人消息主题
+  personalTopic: '/user/queue/messages',
+}
+
 /**
  * WebSocket服务类，用于管理基于STOMP协议的WebSocket连接。
  * 提供连接、断开、订阅、取消订阅和发送消息等功能。
@@ -113,7 +121,7 @@ class WebSocketService {
    * 订阅指定的消息目的地。
    * @param {string} destination - 消息目的地路径。
    * @param {Function} callback - 接收消息时的回调函数。
-   * @returns {Object|null} 返回订阅对象或null（如果未连接）。
+   * @returns {object | null} 返回订阅对象或null（如果未连接）。
    */
   subscribe(destination, callback) {
     // 检查STOMP客户端是否存在且已连接
@@ -148,8 +156,8 @@ class WebSocketService {
   /**
    * 向指定目的地发送消息。
    * @param {string} destination - 消息发送的目的地路径。
-   * @param {Object} headers - 消息头信息。
-   * @param {Object|string} body - 消息体内容。
+   * @param {object} headers - 消息头信息。
+   * @param {object | string} body - 消息体内容。
    */
   send(destination, headers, body) {
     // 检查STOMP客户端是否存在且已连接
@@ -174,9 +182,17 @@ class WebSocketService {
     // 返回连接状态：connected为true，stompClient存在，且stompClient.connected为true
     return this.connected && this.stompClient && this.stompClient.connected
   }
+
+  /**
+   * 获取订阅映射表
+   */
+  getSubscriptions() {
+    return this.subscriptions
+  }
 }
 
 // 创建WebSocketService的单例实例
 const webSocketService = new WebSocketService()
 // 导出WebSocket服务实例
-export default webSocketService
+export { webSocketService }
+export { topic }
