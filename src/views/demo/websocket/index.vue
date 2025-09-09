@@ -133,27 +133,29 @@
 
 <script setup>
 import { onUnmounted, ref } from 'vue'
-import webSocketService from '@/utils/websocket/index.js'
-
+import { webSocketService } from '@/utils/websocket/index.js'
+import { useAuthStore } from '@/store'
 // 响应式数据
 // const websocketUrl = ref('http://localhost:8260/ws') // 直连方式
 // const websocketUrl = ref('http://localhost:8180/bm-websocket/ws') // 网关方式
-const websocketUrl = ref('/api/bm-websocket/ws') // 前端 /api 代理
-const connecting = ref(false)
-const isConnected = ref(false)
-const isSubscribe = ref(false)
-const subscribeTopic = ref('/topic/messages')
-const sendDestination = ref('/app/message')
+const websocketUrl = ref(`/api/bm-websocket/ws`) // 前端 /api 代理
+const connecting = ref() // 连接中状态
+const isConnected = ref(webSocketService.isConnected()) // 连接状态
+const isSubscribe = ref(false) // 订阅状态
+const subscribeTopic = ref('/topic/testNotificationsMessages') // 订阅主题
+const sendDestination = ref('/app/testNotificationsMessages') // 发送目的地
 const messageContent = ref('')
 const messages = ref([])
 const activeSubscriptions = ref([])
-
+const authStore = useAuthStore()
+// 使用Auth Store获取访问令牌
+const { authHeaderKey, accessToken, tokenPrefix } = authStore
 // 连接WebSocket
 function connect() {
   connecting.value = true
 
   webSocketService.connect(
-    websocketUrl.value,
+    `${websocketUrl.value}?token=abc123&${authHeaderKey}=${tokenPrefix + accessToken}`,
     (frame) => {
       connecting.value = false
       isConnected.value = true
