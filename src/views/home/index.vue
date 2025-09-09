@@ -273,6 +273,4 @@ const skillOption = {
     },
   ],
 }
-
-const message = $message
 </script>
