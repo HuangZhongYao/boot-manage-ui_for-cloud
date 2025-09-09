@@ -31,8 +31,6 @@ import { setupDirectives } from './directives'
  * @returns {void}
  */
 async function bootstrap() {
-  // 由于 sockjs 在浏览器环境中引用了 Node.js 的 global 对象，而浏览器中没有这个对象。添加 global 对象
-  window.global = window
   // 创建Vue应用实例
   const app = createApp(App)
   // 设置全局存储

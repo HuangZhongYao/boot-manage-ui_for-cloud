@@ -88,5 +88,8 @@ export default defineConfig(({ mode }) => {
       // 设置分块大小警告限制。
       chunkSizeWarningLimit: 1024,
     },
+    define: {
+      global: 'window',// 由于 sockjs 在浏览器环境中引用了 Node.js 的 global 对象，而浏览器中没有这个对象。添加 global 对象
+    },
   }
 })
