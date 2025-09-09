@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@arco-design/color": "^0.4.0",
+    "@stomp/stompjs": "^7.1.1",
     "@vicons/ionicons4": "^0.12.0",
     "@vicons/ionicons5": "^0.12.0",
     "@vicons/tabler": "^0.12.0",
@@ -26,6 +27,7 @@
     "nanoid": "^5.1.5",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
+    "sockjs-client": "^1.6.1",
     "vue": "^3.4.31",
     "vue-echarts": "^6.7.3",
     "vue-router": "^4.4.0",
