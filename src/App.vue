@@ -14,15 +14,17 @@
     :theme="appStore.isDark ? darkTheme : undefined"
     :theme-overrides="appStore.naiveThemeOverrides"
   >
-    <router-view v-if="Layout" v-slot="{ Component, route: curRoute }">
-      <component :is="Layout">
-        <KeepAlive :include="keepAliveNames">
-          <component :is="Component" v-if="!tabStore.reloading" :key="curRoute.fullPath" />
-        </KeepAlive>
-      </component>
+    <n-notification-provider placement="bottom-right" >
+      <router-view v-if="Layout" v-slot="{ Component, route: curRoute }">
+        <component :is="Layout">
+          <KeepAlive :include="keepAliveNames">
+            <component :is="Component" v-if="!tabStore.reloading" :key="curRoute.fullPath" />
+          </KeepAlive>
+        </component>
 
-      <LayoutSetting v-if="layoutSettingVisible" class="fixed right-12 top-1/2 z-999" />
-    </router-view>
+        <LayoutSetting v-if="layoutSettingVisible" class="fixed right-12 top-1/2 z-999" />
+      </router-view>
+    </n-notification-provider>
   </n-config-provider>
 </template>
 

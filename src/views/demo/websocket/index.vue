@@ -133,8 +133,12 @@
 
 <script setup>
 import { onUnmounted, ref } from 'vue'
+import { useNotification } from 'naive-ui'
 import { webSocketService } from '@/utils/websocket/index.js'
 import { useAuthStore } from '@/store'
+
+const notification = useNotification()
+
 // 响应式数据
 // const websocketUrl = ref('http://localhost:8260/ws') // 直连方式
 // const websocketUrl = ref('http://localhost:8180/bm-websocket/ws') // 网关方式
@@ -186,6 +190,18 @@ function subscribe() {
 
   const subscription = webSocketService.subscribe(subscribeTopic.value, (message) => {
     addMessage(message.body, 'received', null, subscribeTopic.value)
+    notification.create({
+      title: '收到一条通知',
+      content: `${message.body}`,
+      duration: 10000,
+      closable: true,
+      onAfterEnter: () => {
+
+      },
+      onAfterLeave: () => {
+
+      },
+    })
   })
 
   if (subscription) {
