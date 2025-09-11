@@ -6,9 +6,28 @@
  * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  **********************************/
 
+import { getActivePinia } from 'pinia'
+import { webSocketService } from '@/utils/websocket/index.js'
+import { useAuthStore } from '@/store/index.js'
+
 export function createPageLoadingGuard(router) {
   router.beforeEach(() => {
     $loadingBar.start()
+    // 检查 Pinia 是否已激活
+    if (getActivePinia()) {
+      try {
+        // 获取访问令牌
+        const { authHeaderKey } = useAuthStore()
+
+        // 如果是已登录状态，且为连接websocket则初始化连接
+        if (authHeaderKey && !webSocketService.connected) {
+          webSocketService.initializeConnect()
+        }
+      }
+      catch (error) {
+        console.warn('PageLoadingGuard Failed to initialize WebSocket:', error)
+      }
+    }
   })
 
   router.afterEach(() => {

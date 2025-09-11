@@ -132,7 +132,6 @@
 </template>
 
 <script setup>
-import { onUnmounted, ref } from 'vue'
 import { useNotification } from 'naive-ui'
 import { webSocketService } from '@/utils/websocket/index.js'
 import { useAuthStore } from '@/store'
@@ -144,7 +143,7 @@ const notification = useNotification()
 // const websocketUrl = ref('http://localhost:8180/bm-websocket/ws') // 网关方式
 const websocketUrl = ref(`/api/bm-websocket/ws`) // 前端 /api 代理
 const connecting = ref() // 连接中状态
-const isConnected = ref(webSocketService.isConnected()) // 连接状态
+const isConnected = ref(webSocketService.connected) // 连接状态
 const isSubscribe = ref(false) // 订阅状态
 const subscribeTopic = ref('/topic/testNotificationsMessages') // 订阅主题
 const sendDestination = ref('/app/testNotificationsMessages') // 发送目的地
@@ -272,11 +271,6 @@ function getMessageTypeText(type) {
   }
   return typeMap[type] || type
 }
-
-// 组件卸载时断开连接
-onUnmounted(() => {
-  disconnect()
-})
 </script>
 
 <style scoped>

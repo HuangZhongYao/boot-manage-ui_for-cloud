@@ -2,15 +2,14 @@
 import SockJS from 'sockjs-client'
 // 导入STOMP.js库，用于处理STOMP协议的消息通信
 import { Client } from '@stomp/stompjs'
-
+import { useAuthStore } from '@/store/index.js'
 // 订阅主题
 const topic = {
   // 通知广播主题
   notificationTopic: '/topic/notificationsMessages',
   // 用户个人消息主题
-  personalTopic: '/user/queue/messages',
+  personalTopic: '/user/{user}/queue/messages',
 }
-
 /**
  * WebSocket服务类，用于管理基于STOMP协议的WebSocket连接。
  * 提供连接、断开、订阅、取消订阅和发送消息等功能。
@@ -100,6 +99,25 @@ class WebSocketService {
         onErrorCallback(error)
       }
     }
+  }
+
+  /**
+   * 初始化WebSocket连接。
+   */
+  initializeConnect() {
+    const authStore = useAuthStore()
+    // 使用Auth Store获取访问令牌
+    const { authHeaderKey, accessToken, tokenPrefix } = authStore
+    // 连接
+    this.connect(
+      `${import.meta.env.VITE_WEBSOCKET_ENDPOINT}?token=abc123&${authHeaderKey}=${tokenPrefix + accessToken}`,
+      (frame) => {
+        console.info('WebSocket connection success: frame ', frame)
+      },
+      (error) => {
+        console.error('WebSocket connection failed:', error)
+      },
+    )
   }
 
   /**
