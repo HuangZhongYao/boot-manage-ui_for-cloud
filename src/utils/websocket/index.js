@@ -41,6 +41,9 @@ class WebSocketService {
    */
   connect(url, onConnectCallback, onErrorCallback) {
     try {
+      if (this.connected) {
+        return
+      }
       // 创建SockJS连接，提供WebSocket的备选传输方式
       const socket = new SockJS(url)
 
@@ -105,6 +108,9 @@ class WebSocketService {
    * 初始化WebSocket连接。
    */
   initializeConnect() {
+    if (this.connected) {
+      return
+    }
     const authStore = useAuthStore()
     // 使用Auth Store获取访问令牌
     const { authHeaderKey, accessToken, tokenPrefix } = authStore
