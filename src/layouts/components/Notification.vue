@@ -48,7 +48,7 @@ watch(() => webSocketService.connected.value, () => {
 </script>
 
 <template>
-  <div class="" />
+  <div style="display: none" />
 </template>
 
 <style scoped>
