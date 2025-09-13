@@ -133,19 +133,18 @@
 
 <script setup>
 import { useNotification } from 'naive-ui'
-import { webSocketService } from '@/utils/websocket/index.js'
+import { topic, webSocketService } from '@/utils/websocket/index.js'
 import { useAuthStore } from '@/store'
 
 const notification = useNotification()
-
 // 响应式数据
 // const websocketUrl = ref('http://localhost:8260/ws') // 直连方式
 // const websocketUrl = ref('http://localhost:8180/bm-websocket/ws') // 网关方式
-const websocketUrl = ref(`/api/bm-websocket/ws`) // 前端 /api 代理
+const websocketUrl = ref(import.meta.env.VITE_WEBSOCKET_ENDPOINT || 's') // 前端 /api 代理
 const connecting = ref() // 连接中状态
-const isConnected = ref(webSocketService.connected) // 连接状态
+const isConnected = ref(webSocketService.connected.value) // 连接状态
 const isSubscribe = ref(false) // 订阅状态
-const subscribeTopic = ref('/topic/testNotificationsMessages') // 订阅主题
+const subscribeTopic = ref(topic.testNotificationTopic) // 订阅主题
 const sendDestination = ref('/app/testNotificationsMessages') // 发送目的地
 const messageContent = ref('')
 const messages = ref([])

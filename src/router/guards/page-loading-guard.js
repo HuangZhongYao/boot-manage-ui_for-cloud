@@ -25,7 +25,7 @@ export function createPageLoadingGuard(router) {
           const { authHeaderKey } = useAuthStore()
 
           // 如果是已登录状态，且为连接websocket则初始化连接
-          if (authHeaderKey && !webSocketService.connected) {
+          if (authHeaderKey && !webSocketService.isConnected()) {
             webSocketService.initializeConnect()
           }
         }
