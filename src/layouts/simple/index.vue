@@ -19,12 +19,15 @@
     <article class="w-0 flex-col flex-1">
       <slot />
     </article>
+
+    <Notification />
   </div>
 </template>
 
 <script setup>
 import SideBar from './sidebar/index.vue'
 import { useAppStore } from '@/store'
+import { Notification } from '@/layouts/components/index'
 
 const appStore = useAppStore()
 </script>
