@@ -6,9 +6,12 @@
  --------------------------------->
 <script setup>
 import { useNotification } from 'naive-ui'
+import { useUserStore } from '@/store/modules'
 import { topic, webSocketService } from '@/utils/websocket/index'
 
 const notification = useNotification()
+
+const { userId } = useUserStore()
 
 watch(() => webSocketService.connected.value, () => {
   // 订阅广播通知消息
@@ -27,7 +30,7 @@ watch(() => webSocketService.connected.value, () => {
     })
   })
   // 订阅个人通知消息
-  webSocketService.subscribe(topic.personalTopic, (message) => {
+  webSocketService.subscribe(`${topic.personalTopic.replace('{user}', userId)}`, (message) => {
     notification.create({
       title: '收到一条通知',
       content: `${message}`,
