@@ -14,10 +14,11 @@ const notification = useNotification()
 const { userId } = useUserStore()
 
 watch(() => webSocketService.connected.value, () => {
-  // 订阅广播通知消息
-  webSocketService.subscribe(topic.testNotificationTopic, (message) => {
+  // 订阅个人通知消息
+  webSocketService.subscribe(`${topic.personalTopic}`, (message) => {
+    console.error('收到一条通知', message.body)
     notification.create({
-      title: '收到一条全体通知',
+      title: '收到一条通知',
       content: `${message}`,
       duration: 10000,
       closable: true,
@@ -29,10 +30,11 @@ watch(() => webSocketService.connected.value, () => {
       },
     })
   })
-  // 订阅个人通知消息
-  webSocketService.subscribe(`${topic.personalTopic.replace('{user}', userId)}`, (message) => {
+  // 订阅广播通知消息
+  webSocketService.subscribe(topic.notificationTopic, (message) => {
+    console.error('收到一条全体通知', message.body)
     notification.create({
-      title: '收到一条通知',
+      title: '收到一条全体通知',
       content: `${message}`,
       duration: 10000,
       closable: true,
