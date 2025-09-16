@@ -23,8 +23,12 @@
           <i class="i-fe:search mr-4" />
           搜索
         </NButton>
-        <n-icon class="ml-4 cursor-pointer p-2 transition-all duration-200 hover:bg-gray-100 hover:text-primary" size="25">
-          <i :class="showTable ? 'i-me:xicon-card' : 'i-me:xicon-table'" @click="showTable = !showTable" />
+        <n-icon
+          class="ml-4 cursor-pointer p-2 transition-all duration-200 hover:bg-gray-100 hover:text-primary"
+          size="25"
+          @click="toggleView"
+        >
+          <i :class="viewMode === 'table' ? 'i-me:xicon-card' : 'i-me:xicon-table'" />
         </n-icon>
         <template v-if="expand">
           <NButton v-if="!isExpanded" type="primary" text @click="toggleExpand">
@@ -40,75 +44,98 @@
     </form>
   </AppCard>
 
-  <NDataTable
-    v-show="showTable"
-    :remote="remote"
-    :loading="loading"
-    :scroll-x="scrollX"
-    :max-height="maxHeight"
-    :columns="columns"
-    :data="tableData"
-    :row-key="(row) => row[rowKey]"
-    :pagination="isPagination ? pagination : false"
-    @update:checked-row-keys="onChecked"
-    @update:page="onPageChange"
-  />
+  <!-- 视图容器 -->
+  <div class="view-container">
+    <transition name="view-transition" mode="out-in">
+      <!-- 表格视图 -->
+      <NDataTable
+        v-if="viewMode === 'table'"
+        key="table-view"
+        :remote="remote"
+        :loading="loading"
+        :scroll-x="scrollX"
+        :max-height="maxHeight"
+        :columns="columns"
+        :data="tableData"
+        :row-key="(row) => row[rowKey]"
+        :pagination="isPagination ? pagination : false"
+        class="view-content"
+        @update:checked-row-keys="onChecked"
+        @update:page="onPageChange"
+        @update:page-size="onPageSizeChange"
+      />
 
-  <NFlex v-show="!showTable" vertical align="stretch" :style="{'height': maxHeight}">
-    <NFlex inline size="large" class="overflow-auto">
-      <NCard
-        v-for="(row, index) in tableData"
-        :key="`${row[rowKey]}_${index}_${JSON.stringify(row).slice(0, 50)}`"
-        size="small"
-        hoverable
-        embedded
-        class="n-card-custom max-h-400 max-w-24% min-w-15% overflow-y-auto border-r-8"
+      <!-- 卡片视图 -->
+      <div
+        v-else-if="viewMode === 'card'"
+        key="card-view"
+        class="card-container view-content"
+        :style="{ height: `${maxHeight}px` }"
       >
-        <template #header>
-          <span class="font-medium text-sm">{{ getCardTitle(row) }}</span>
-        </template>
-        <n-list hoverable clickable show-divider>
-          <n-list-item v-for="column in displayColumns" :key="column.key">
-            {{ column.title }}:
-            <template v-if="column.render">
-              <template v-if="Array.isArray(column.render(row))">
-                <template v-for="(vnode, vnodeIndex) in column.render(row)" :key="`${column.key}_${vnodeIndex}`">
-                  <component :is="vnode" />
-                </template>
+        <n-grid
+          v-if="tableData && tableData.length > 0"
+          cols="1 s:2 m:3 l:4 xl:5 2xl:6"
+          responsive="screen"
+          :x-gap="12"
+          :y-gap="12"
+        >
+          <n-grid-item v-for="(row, index) in tableData" :key="row[rowKey] || index">
+            <n-card
+              size="small"
+              hoverable
+              embedded
+              class="card-item"
+            >
+              <template #header>
+                <span class="card-title">{{ getCardTitle(row) }}</span>
               </template>
-              <template v-else-if="isVNode(column.render(row))">
-                <component :is="column.render(row)" />
-              </template>
-              <template v-else>
-                {{ column.render(row) }}
-              </template>
-            </template>
-            <template v-else>
-              {{ row[column.key] }}
-            </template>
-          </n-list-item>
-        </n-list>
-      </NCard>
-    </NFlex>
 
-    <n-pagination
-      v-if="isPagination"
-      class="w-full justify-end"
-      :page="pagination.page"
-      :page-size="pagination.pageSize"
-      :item-count="pagination.itemCount"
-      :page-sizes="pagination.pageSizes"
-      show-size-picker
-      show-quick-jumper
-      @update:page="onPageChange"
-      @update:page-size="pagination.onUpdatePageSize"
-    />
-  </NFlex>
+              <n-descriptions label-placement="left" size="small" :column="1">
+                <n-descriptions-item
+                  v-for="column in displayColumns"
+                  :key="column.key"
+                  :label="column.title"
+                >
+                  <template v-if="column.render">
+                    <RenderContent :render="column.render" :row="row" />
+                  </template>
+                  <template v-else>
+                    {{ row[column.key] || '-' }}
+                  </template>
+                </n-descriptions-item>
+              </n-descriptions>
+            </n-card>
+          </n-grid-item>
+        </n-grid>
+
+        <!-- 空状态 -->
+        <n-empty
+          v-else
+          description="暂无数据"
+          size="large"
+          class="empty-state"
+        />
+
+        <!-- 分页 -->
+        <n-pagination
+          v-if="isPagination && pagination.itemCount > 0"
+          class="pagination"
+          :page="pagination.page"
+          :page-size="pagination.pageSize"
+          :item-count="pagination.itemCount"
+          :page-sizes="pagination.pageSizes"
+          show-size-picker
+          show-quick-jumper
+          @update:page="onPageChange"
+          @update:page-size="onPageSizeChange"
+        />
+      </div>
+    </transition>
+  </div>
 </template>
 
 <script setup>
 import { utils, writeFile } from 'xlsx'
-import { nanoid } from 'nanoid'
 
 const props = defineProps({
   /**
@@ -164,26 +191,75 @@ const props = defineProps({
   /** 是否支持展开 */
   expand: Boolean,
 })
+
 const emit = defineEmits(['update:queryItems', 'onChecked', 'onDataChange'])
+
+// 渲染内容组件
+// eslint-disable-next-line no-undef
+const RenderContent = defineComponent({
+  props: {
+    render: {
+      type: Function,
+      required: true,
+    },
+    row: {
+      type: Object,
+      required: true,
+    },
+  },
+  setup(props) {
+    const result = computed(() => {
+      try {
+        return props.render(props.row)
+      }
+      catch (error) {
+        console.error('Render function error:', error)
+        return '-'
+      }
+    })
+
+    return () => {
+      const content = result.value
+
+      // 处理不同类型的返回值
+      if (content === null || content === undefined) {
+        return h('span', '-')
+      }
+
+      if (Array.isArray(content)) {
+        // 过滤掉无效的元素
+        const validContent = content.filter(item => item !== null && item !== undefined)
+        return validContent.length > 0 ? validContent : h('span', '-')
+      }
+
+      if (typeof content === 'object' && content !== null) {
+        // 检查是否为 VNode
+        if (typeof content === 'object' && 'type' in content) {
+          return content
+        }
+        return h('span', JSON.stringify(content))
+      }
+
+      return h('span', String(content))
+    }
+  },
+})
+
+// 响应式数据
 const loading = ref(false)
 const initQuery = { ...props.queryItems }
 const tableData = ref([])
+const viewMode = ref('table') // 'table' | 'card'
 const pagination = reactive({
   page: 1,
   pageSize: 10,
   pageSizes: [5, 10, 20, 30, 40, 50, 100],
+  itemCount: 0,
   showSizePicker: true,
   showQuickJumper: true,
   displayOrder: ['pages', 'quick-jumper', 'size-picker'],
   prefix({ itemCount }) {
     return `共 ${itemCount} 条数据`
-  },
-  onChange: (page) => {
-    pagination.page = page
-  },
-  onUpdatePageSize: (pageSize) => {
-    pagination.pageSize = pageSize
-    handleSearch()
   },
 })
 
@@ -192,44 +268,56 @@ const isExpanded = ref(false)
 
 // 计算属性 - 过滤卡片显示的列
 const displayColumns = computed(() => {
-  return props.columns
+  return props.columns.filter(column =>
+    column
+    && column.key
+    && column.title
+    && column.type !== 'selection'
+    && column.type !== 'expand',
+  )
 })
+
+// 切换视图模式
+function toggleView() {
+  viewMode.value = viewMode.value === 'table' ? 'card' : 'table'
+}
 
 // 获取卡片标题
 function getCardTitle(row) {
-  return row.name || row.username || row[props.rowKey] || '未命名'
+  return row.name || row.username || row.title || row[props.rowKey] || '未命名'
 }
 
 function toggleExpand() {
   isExpanded.value = !isExpanded.value
 }
 
+// 处理查询
 async function handleQuery() {
   try {
     loading.value = true
     let paginationParams = {}
+
     // 如果非分页模式或者使用前端分页,则无需传分页参数
     if (props.isPagination && props.remote) {
       paginationParams = { pageNo: pagination.page, pageSize: pagination.pageSize }
     }
+
     const res = await props.getData({
       ...props.queryItems,
       ...paginationParams,
     })
+
     // 判断使用后端分页还是前端分页
-    tableData.value = res.result?.records || res.result
-    pagination.itemCount = res.result.total ?? res.result.length
-    if (pagination.itemCount && !tableData.value.length && pagination.page > 1) {
+    tableData.value = res.result?.records || res.result || []
+    pagination.itemCount = res.result?.total ?? res.result?.length ?? 0
+
+    if (pagination.itemCount > 0 && tableData.value.length === 0 && pagination.page > 1) {
       // 如果当前页数据为空，且总条数不为0，则返回上一页数据
       onPageChange(pagination.page - 1)
     }
-    for (const valueElement of tableData.value) {
-      // 不再修改原始数据，保持数据的纯净性
-      // valueElement.key = valueElement[props.rowKey] || nanoid()
-    }
   }
-    // eslint-disable-next-line unused-imports/no-unused-vars
   catch (error) {
+    console.error('查询失败:', error)
     tableData.value = []
     pagination.itemCount = 0
   }
@@ -247,6 +335,7 @@ function handleSearch(keepCurrentPage = false) {
     onPageChange(1)
   }
 }
+
 async function handleReset() {
   const queryItems = { ...props.queryItems }
   for (const key in queryItems) {
@@ -257,20 +346,29 @@ async function handleReset() {
   pagination.page = 1
   handleQuery()
 }
+
 function onPageChange(currentPage) {
   pagination.page = currentPage
   if (props.remote) {
     handleQuery()
   }
 }
+
+function onPageSizeChange(pageSize) {
+  pagination.pageSize = pageSize
+  handleSearch()
+}
+
 function onChecked(rowKeys) {
   if (props.columns.some(item => item.type === 'selection')) {
     emit('onChecked', rowKeys)
   }
 }
+
 function handleExport(columns = props.columns, data = tableData.value) {
   if (!data?.length)
     return $message.warning('没有数据')
+
   const columnsData = columns.filter(item => !!item.title && !item.hideInExcel)
   const thKeys = columnsData.map(item => item.key)
   const thData = columnsData.map(item => item.title)
@@ -281,30 +379,79 @@ function handleExport(columns = props.columns, data = tableData.value) {
   writeFile(workBook, '数据报表.xlsx')
 }
 
-// 是否显示表格
-const showTable = ref(true)
-
-// 判断是否是虚拟节点
-function isVNode(obj) {
-  return (
-    typeof obj === 'object' && obj !== null && 'type' in obj && 'props' in obj && 'children' in obj
-  )
-}
-
 defineExpose({
   handleSearch,
   handleReset,
   handleExport,
+  toggleView,
 })
 </script>
 
 <style scoped>
-.n-card-custom {
-  /* Firefox：隐藏滚动条 */
-  scrollbar-width: none;
+.view-container {
+  position: relative;
 }
-/* Webkit 内核浏览器（Edge Chromium / Chrome / Safari）：隐藏滚动条 */
-.n-card-custom::-webkit-scrollbar {
-  display: none;
+
+.view-content {
+  width: 100%;
+}
+
+.card-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-item {
+  height: 100%;
+  border-radius: 1vh;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 550;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 0;
+}
+
+/* 视图切换动画 */
+.view-transition-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.view-transition-leave-active {
+  transition: all 0.3s ease-in;
+}
+
+.view-transition-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.view-transition-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+/* 暗色主题适配 */
+:deep(.dark) .view-transition-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+:deep(.dark) .view-transition-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
 }
 </style>
