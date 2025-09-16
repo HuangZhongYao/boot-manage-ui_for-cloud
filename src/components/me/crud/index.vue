@@ -1,4 +1,5 @@
 <!--------------------------------
+ - 通用CRUD组件支持表格和卡片切换显示
  - @Author: Ronnie Zhang
  - @LastEditor: Ronnie Zhang
  - @LastEditTime: 2023/12/04 22:51:42
@@ -53,37 +54,55 @@
     @update:page="onPageChange"
   />
 
-  <NFlex v-if="!showTable" vertical align="stretch" class="h-100%">
+  <NFlex v-show="!showTable" vertical align="stretch" :style="{'height': maxHeight}">
     <NFlex inline size="large" class="overflow-auto">
-      <NCard v-for="(row) in tableData" :key="row.key" size="small" hoverable class="n-card-custom max-h-400 max-w-30% min-w-15% overflow-y-auto border-r-8">
-        {{ row.key }}
+      <NCard
+        v-for="(row, index) in tableData"
+        :key="`${row[rowKey]}_${index}_${JSON.stringify(row).slice(0, 50)}`"
+        size="small"
+        hoverable
+        embedded
+        class="n-card-custom max-h-400 max-w-24% min-w-15% overflow-y-auto border-r-8"
+      >
+        <template #header>
+          <span class="font-medium text-sm">{{ getCardTitle(row) }}</span>
+        </template>
         <n-list hoverable clickable show-divider>
-          <n-list-item v-for="column in columns" :key="column.key">
-            <span class="inline-block w-70px">{{ column.title }}</span>
-            <span class="vertical-mid">
-              <template v-if="column.render">
-                <template v-if="Array.isArray(column.render(row))">
-                  <template v-for="(vnode, index) in column.render(row)" :key="column.key + row.key + index">
-                    <component :is="vnode" />
-                  </template>
+          <n-list-item v-for="column in displayColumns" :key="column.key">
+            {{ column.title }}:
+            <template v-if="column.render">
+              <template v-if="Array.isArray(column.render(row))">
+                <template v-for="(vnode, vnodeIndex) in column.render(row)" :key="`${column.key}_${vnodeIndex}`">
+                  <component :is="vnode" />
                 </template>
-                <template v-else-if="isVNode(column.render(row))">
-                  <component :is="column.render(row)" />
-                </template>
-                <template v-else>
-                  {{ column.render(row) }}
-                </template>
+              </template>
+              <template v-else-if="isVNode(column.render(row))">
+                <component :is="column.render(row)" />
               </template>
               <template v-else>
-                {{ row[column.key] }}
+                {{ column.render(row) }}
               </template>
-            </span>
+            </template>
+            <template v-else>
+              {{ row[column.key] }}
+            </template>
           </n-list-item>
         </n-list>
       </NCard>
     </NFlex>
 
-    <n-pagination class="w-full justify-end" :page-count="5" />
+    <n-pagination
+      v-if="isPagination"
+      class="w-full justify-end"
+      :page="pagination.page"
+      :page-size="pagination.pageSize"
+      :item-count="pagination.itemCount"
+      :page-sizes="pagination.pageSizes"
+      show-size-picker
+      show-quick-jumper
+      @update:page="onPageChange"
+      @update:page-size="pagination.onUpdatePageSize"
+    />
   </NFlex>
 </template>
 
@@ -171,6 +190,16 @@ const pagination = reactive({
 // 是否展开
 const isExpanded = ref(false)
 
+// 计算属性 - 过滤卡片显示的列
+const displayColumns = computed(() => {
+  return props.columns
+})
+
+// 获取卡片标题
+function getCardTitle(row) {
+  return row.name || row.username || row[props.rowKey] || '未命名'
+}
+
 function toggleExpand() {
   isExpanded.value = !isExpanded.value
 }
@@ -195,10 +224,11 @@ async function handleQuery() {
       onPageChange(pagination.page - 1)
     }
     for (const valueElement of tableData.value) {
-      valueElement.key = valueElement[props.rowKey] || nanoid()
+      // 不再修改原始数据，保持数据的纯净性
+      // valueElement.key = valueElement[props.rowKey] || nanoid()
     }
   }
-  // eslint-disable-next-line unused-imports/no-unused-vars
+    // eslint-disable-next-line unused-imports/no-unused-vars
   catch (error) {
     tableData.value = []
     pagination.itemCount = 0
