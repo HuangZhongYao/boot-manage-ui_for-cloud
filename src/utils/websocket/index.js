@@ -2,15 +2,20 @@
 import SockJS from 'sockjs-client'
 // 导入STOMP.js库，用于处理STOMP协议的消息通信
 import { Client } from '@stomp/stompjs'
-
+import { useAuthStore } from '@/store/index.js'
 // 订阅主题
 const topic = {
+  // 测试广播主题
+  testNotificationTopic: '/topic/testNotificationsMessages',
   // 通知广播主题
   notificationTopic: '/topic/notificationsMessages',
   // 用户个人消息主题
-  personalTopic: '/user/queue/messages',
+  personalTopic: '/queue/messages',
 }
-
+// 消息发送目的地
+const app = {
+  test: '/app/testNotificationsMessages',
+}
 /**
  * WebSocket服务类，用于管理基于STOMP协议的WebSocket连接。
  * 提供连接、断开、订阅、取消订阅和发送消息等功能。
@@ -23,7 +28,7 @@ class WebSocketService {
     // STOMP客户端实例
     this.stompClient = null
     // 连接状态标识
-    this.connected = false
+    this.connected = ref(false)
     // 订阅映射表，存储所有活动的订阅
     this.subscriptions = new Map()
     // 重连尝试次数计数器
@@ -42,6 +47,14 @@ class WebSocketService {
    */
   connect(url, onConnectCallback, onErrorCallback) {
     try {
+      if (this.connected.value) {
+        console.warn('已是连接状态')
+        // 如果提供了连接成功回调函数，则执行它
+        if (onConnectCallback) {
+          onConnectCallback()
+        }
+        return
+      }
       // 创建SockJS连接，提供WebSocket的备选传输方式
       const socket = new SockJS(url)
 
@@ -60,7 +73,7 @@ class WebSocketService {
           // 输出连接成功的日志信息
           console.warn(`Connected: ${frame}`)
           // 设置连接状态为已连接
-          this.connected = true
+          this.connected.value = true
           // 重置重连尝试次数
           this.reconnectAttempts = 0
           // 如果提供了连接成功回调函数，则执行它
@@ -73,7 +86,7 @@ class WebSocketService {
           // 输出断开连接的日志信息
           console.warn('Disconnected')
           // 设置连接状态为未连接
-          this.connected = false
+          this.connected.value = false
         },
         // STOMP错误回调函数
         onStompError: (frame) => {
@@ -103,6 +116,32 @@ class WebSocketService {
   }
 
   /**
+   * 初始化WebSocket连接。
+   */
+  initializeConnect() {
+    if (this.connected.value) {
+      return
+    }
+    if (!import.meta.env.VITE_WEBSOCKET_ENDPOINT) {
+      console.error('WebSocket 端点没有配置,初始化WebSocket连接失败')
+      return
+    }
+    const authStore = useAuthStore()
+    // 使用Auth Store获取访问令牌
+    const { authHeaderKey, accessToken, tokenPrefix } = authStore
+    // 连接
+    this.connect(
+      `${import.meta.env.VITE_WEBSOCKET_ENDPOINT}?token=abc123&${authHeaderKey}=${tokenPrefix + accessToken}`,
+      (frame) => {
+        console.log('WebSocket connection success: frame ', frame)
+      },
+      (error) => {
+        console.error('WebSocket connection failed:', error)
+      },
+    )
+  }
+
+  /**
    * 断开当前WebSocket连接。
    */
   disconnect() {
@@ -111,7 +150,7 @@ class WebSocketService {
       // 停用STOMP客户端，断开连接
       this.stompClient.deactivate()
       // 设置连接状态为未连接
-      this.connected = false
+      this.connected.value = false
       // 清空所有订阅
       this.subscriptions.clear()
     }
@@ -180,7 +219,7 @@ class WebSocketService {
    */
   isConnected() {
     // 返回连接状态：connected为true，stompClient存在，且stompClient.connected为true
-    return this.connected && this.stompClient && this.stompClient.connected
+    return this.connected.value && this.stompClient && this.stompClient.connected
   }
 
   /**
@@ -196,3 +235,4 @@ const webSocketService = new WebSocketService()
 // 导出WebSocket服务实例
 export { webSocketService }
 export { topic }
+export { app }

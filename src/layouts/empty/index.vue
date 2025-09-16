@@ -7,5 +7,10 @@
  --------------------------------->
 
 <template>
+  <Notification />
   <slot />
 </template>
+
+<script setup>
+import { Notification } from '@/layouts/components/index'
+</script>
