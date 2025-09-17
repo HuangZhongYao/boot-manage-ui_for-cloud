@@ -21,6 +21,7 @@
       :scroll-x="1200"
       :columns="columns"
       :get-data="api.read"
+      card-title-key="name"
     >
       <MeQueryItem label="角色名" :label-width="50">
         <n-input v-model:value="queryItems.name" type="text" placeholder="请输入角色名" clearable />

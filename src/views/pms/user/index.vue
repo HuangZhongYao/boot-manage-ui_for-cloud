@@ -21,6 +21,7 @@
       :scroll-x="1900"
       :columns="columns"
       :get-data="api.read"
+      card-title-key="username"
       expand
     >
       <MeQueryItem label="用户名" :label-width="50">

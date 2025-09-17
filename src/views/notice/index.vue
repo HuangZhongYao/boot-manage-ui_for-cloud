@@ -11,6 +11,7 @@
       v-model:query-items="queryItems"
       :columns="columns"
       :get-data="api.read"
+      card-title-key="title"
       expand
     >
       <MeQueryItem label="标题" :label-width="40">

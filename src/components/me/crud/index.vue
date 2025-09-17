@@ -190,6 +190,14 @@ const props = defineProps({
   },
   /** 是否支持展开 */
   expand: Boolean,
+  /**
+   * 切换卡片视图时标题字段
+   * @cardTitleKey 卡片视图标题字段
+   */
+  cardTitleKey: {
+    type: String,
+    default: undefined,
+  },
 })
 
 const emit = defineEmits(['update:queryItems', 'onChecked', 'onDataChange'])
@@ -284,7 +292,9 @@ function toggleView() {
 
 // 获取卡片标题
 function getCardTitle(row) {
-  return row.name || row.username || row.title || row[props.rowKey] || '未命名'
+  if (props.cardTitleKey)
+    return row[props.cardTitleKey]
+  return row.name || row.username || row.title || row[props.rowKey] || '未设置标题'
 }
 
 function toggleExpand() {

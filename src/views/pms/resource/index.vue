@@ -85,6 +85,7 @@
             :scroll-x="-1"
             :get-data="api.getButtons"
             :query-items="{ parentId: currentMenu.id }"
+            card-title-key="name"
           />
         </template>
         <n-empty v-else class="h-450 f-c-c" size="large" description="请选择菜单查看详情" />
