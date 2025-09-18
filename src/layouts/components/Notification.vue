@@ -15,7 +15,7 @@ const { userId } = useUserStore()
 
 watch(() => webSocketService.connected.value, () => {
   // 订阅个人通知消息
-  webSocketService.subscribe(`${topic.personalTopic}`, (message) => {
+  webSocketService.subscribe(`${topic.personalTopic.replace('{userId}', userId)}`, (message) => {
     console.error('收到一条通知', message.body)
     notification.create({
       title: '收到一条通知',

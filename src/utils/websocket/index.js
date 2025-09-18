@@ -10,7 +10,7 @@ const topic = {
   // 通知广播主题
   notificationTopic: '/topic/notificationsMessages',
   // 用户个人消息主题
-  personalTopic: '/queue/messages',
+  personalTopic: '/user/{userId}/queue/messages',
 }
 // 消息发送目的地
 const app = {
