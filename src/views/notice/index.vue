@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { NButton } from 'naive-ui'
+import { NButton, NTag } from 'naive-ui'
 import api from './api.js'
 import { CommonPage, DictSelect, MeCrud, MeModal, MeQueryItem, RichTextEditor, UserRoleOrgSelector } from '@/components/index'
 import { useCrud } from '@/composables/index.js'
@@ -110,8 +110,19 @@ const columns = [
     title: '标题',
     key: 'title',
   },
-  { title: '状态', key: 'state', ellipsis: { tooltip: true } },
-  { title: '发布人', key: 'createdBy', ellipsis: { tooltip: true } },
+  {
+    title: '状态',
+    key: 'state',
+    render(row) {
+      return h(
+        NTag,
+        { type: row.state === 'PUBLISHED' ? 'success' :'info', bordered: false, },
+        row.stateDesc
+      )
+    },
+    ellipsis: { tooltip: true }
+  },
+  { title: '发布人', key: 'publisherName', ellipsis: { tooltip: true } },
   {
     title: '创建时间',
     key: 'createdTime',
@@ -120,10 +131,18 @@ const columns = [
     },
   },
   {
+    title: '发布时间',
+    key: 'publishTime',
+    render(row) {
+      return h('span', formatDateTime(row.publishTime))
+    },
+  },
+  {
     title: '操作',
     key: 'actions',
     align: 'left',
     fixed: 'right',
+    width: 320,
     hideInExcel: true,
     render(row) {
       return [
@@ -145,6 +164,7 @@ const columns = [
             size: 'tiny',
             type: 'info',
             style: 'margin-left: 8px;',
+            disabled: !row.showPublishBtn,
             onClick: () => handlePublish(row),
           },
           {
@@ -158,6 +178,7 @@ const columns = [
             size: 'tiny',
             type: 'primary',
             style: 'margin-left: 12px;',
+            disabled: !row.showEditBtn,
             onClick: () => handleEdit(row),
           },
           {
@@ -171,6 +192,7 @@ const columns = [
             size: 'tiny',
             type: 'error',
             style: 'margin-left: 8px;',
+            disabled: !row.showDelBtn,
             onClick: () => handleDelete({ ids: [row.id] }),
           },
           {
