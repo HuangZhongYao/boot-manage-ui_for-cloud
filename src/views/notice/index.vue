@@ -116,11 +116,11 @@ const columns = [
     render(row) {
       return h(
         NTag,
-        { type: row.state === 'PUBLISHED' ? 'success' :'info', bordered: false, },
-        row.stateDesc
+        { type: row.state === 'PUBLISHED' ? 'success' : 'info', bordered: false },
+        row.stateDesc,
       )
     },
-    ellipsis: { tooltip: true }
+    ellipsis: { tooltip: true },
   },
   { title: '发布人', key: 'publisherName', ellipsis: { tooltip: true } },
   {
