@@ -118,6 +118,7 @@ const userTableOptions = ref({
     [
       {
         type: 'selection',
+        multiple: props.multiple,
         disabled: ({ enable }) => enable === false,
       },
       {
@@ -287,6 +288,7 @@ function handleOrgSelectionChange(keys, option, { node }) {
     name: row.name,
     type: checkedType.organization,
   }))
+  selectedOrgKeys.value = newOrganizationData.map(item => item.id)
   // 添加到 checkedDataRef 中
   upsertSelectedByType(checkedType.organization, newOrganizationData)
 }
@@ -331,6 +333,7 @@ const roleTableOptions = ref({
     [
       {
         type: 'selection',
+        multiple: props.multiple,
         disabled: ({ enable }) => enable === false,
       },
       {
@@ -591,6 +594,7 @@ defineExpose({
           </div>
           <n-spin size="small" :show="orgTreeOptions.treeLoading">
             <n-tree
+              :multiple="props.multiple"
               :checked-keys="selectedOrgKeys"
               class="hide-scrollbar h-70vh overflow-y-auto"
               :show-irrelevant-nodes="false"
