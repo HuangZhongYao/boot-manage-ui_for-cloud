@@ -75,7 +75,8 @@ import { useStorage } from '@vueuse/core'
 import Vcode from 'vue3-puzzle-vcode'
 import { useRoute, useRouter } from 'vue-router'
 import api from './api'
-import { lStorage } from '@/utils'
+import commonApi from '@/api/index.js'
+import { lStorage, rsaEncrypt } from '@/utils'
 import { useAuthStore, useSystemStore } from '@/store'
 import { TheFooter } from '@/components/index.js'
 
@@ -88,6 +89,9 @@ const title = import.meta.env.VITE_TITLE
 const loginInfo = ref({
   account: '',
   password: '',
+  captcha: '',
+  sessionId: '',
+  publicKey: '',
 })
 
 // 定义一个变量控制验证组件显示
@@ -120,19 +124,28 @@ if (localLoginInfo) {
 const isRemember = useStorage('isRemember', true)
 const loading = ref(false)
 
+onMounted(() => {
+  // 获取公钥
+  commonApi.getEncryptionPublicKey()
+    .then((res) => {
+      loginInfo.value.sessionId = res.result.sessionId
+      loginInfo.value.publicKey = res.result.publicKey
+    })
+})
+
 /**
  * 登录方法
  * @returns {Promise<*>}
  */
 async function handleLogin() {
-  const { account, password, captcha } = loginInfo.value
+  const { account, password, captcha, sessionId } = loginInfo.value
   if (!account || !password)
     return $message.warning('请输入用户名和密码')
 
   try {
     loading.value = true
     $message.loading('正在验证，请稍后...', { key: 'login' })
-    const { result } = await api.login({ account, password: password.toString(), captcha })
+    const { result } = await api.login({ account, password: rsaEncrypt(password, loginInfo.value.publicKey), captcha, sessionId })
     if (isRemember.value) {
       lStorage.set('loginInfo', { account, password })
     }
