@@ -21,4 +21,6 @@ export default {
   getPermissions: () => request.get('/bm-auth/auth/queryPermissionsTree'),
   // 验证菜单路径
   validateMenuPath: path => request.get(`/permission/menu/validate?path=${path}`),
+  // 获取公钥
+  getEncryptionPublicKey: () => request.get('/bm-auth/encryption/getEncryptionPublicKey'),
 }
