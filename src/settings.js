@@ -99,16 +99,6 @@ export const basePermissions = [
         enable: true,
         show: true,
       },
-      {
-        code: 'Report',
-        name: 'UReport2',
-        type: 'MENU',
-        path: 'http://127.0.0.1:8180/bm-datareport/ureport/designer',
-        icon: 'i-me:csdn',
-        order: 4,
-        enable: true,
-        show: true,
-      },
     ],
   },
 ]
