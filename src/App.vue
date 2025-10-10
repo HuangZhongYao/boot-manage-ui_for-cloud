@@ -14,7 +14,7 @@
     :theme="appStore.isDark ? darkTheme : undefined"
     :theme-overrides="appStore.naiveThemeOverrides"
   >
-    <n-notification-provider placement="bottom-right" >
+    <n-notification-provider placement="bottom-right">
       <router-view v-if="Layout" v-slot="{ Component, route: curRoute }">
         <component :is="Layout">
           <KeepAlive :include="keepAliveNames">
