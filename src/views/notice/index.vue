@@ -25,7 +25,7 @@
         />
       </MeQueryItem>
       <MeQueryItem label="状态" :label-width="40">
-        <DictSelect v-model:value="modalForm.state" dict-type-code="NOTICE_STATE" :default-value="modalForm.type ? modalForm.type : modalForm.type = `mysql`" clearable />
+        <DictSelect v-model:value="queryItems.state" dict-type-code="NOTICE_STATE" clearable />
       </MeQueryItem>
     </MeCrud>
     <MeModal ref="modalRef" width="60%" class="h-95vh" :mask-closable="false">
@@ -33,8 +33,6 @@
         ref="modalFormRef"
         label-placement="left"
         label-align="left"
-        :label-width="80"
-        inline
         :model="modalForm"
         :disabled="modalAction === 'view'"
       >
@@ -50,10 +48,39 @@
           <n-input v-model:value="modalForm.title" />
         </n-form-item>
         <n-form-item
-          label="通知对象"
+          label="级别"
+          path="level"
+          :rule="{
+            required: true,
+            message: '请选择通知级别',
+            trigger: ['input', 'blur'],
+          }"
+        >
+          <DictSelect v-model:value="modalForm.level" dict-type-code="SYS:TZ:JB" />
+        </n-form-item>
+        <n-form-item
+          label="级别"
+          path="type"
+          :rule="{
+            required: true,
+            message: '请选择通知类型',
+            trigger: ['input', 'blur'],
+          }"
+        >
+          <DictSelect v-model:value="modalForm.type" dict-type-code="SYS:TZ:LX" />
+        </n-form-item>
+        <n-form-item
+          label="全体通知"
+          path="allNotifications"
           required
         >
-          <UserRoleOrgSelector :disabled="modalAction === 'view'" :checked-data="modalForm.notificationsTargets" @update="handleOrganizationSelector" />
+          <n-switch v-model:value="modalForm.allNotifications" />
+        </n-form-item>
+        <n-form-item
+          label="通知对象"
+          :required="!modalForm.allNotifications"
+        >
+          <UserRoleOrgSelector multiple :disabled="modalAction === 'view' || modalForm.allNotifications" :checked-data="modalForm.notificationsTargets" @update="handleOrganizationSelector" />
         </n-form-item>
       </n-form>
       <n-form>
@@ -97,6 +124,7 @@ const { modalRef, modalFormRef, modalForm, modalAction, handleAdd, handleDelete,
   initForm: {
     content: '',
     title: '',
+    allNotifications: true,
     notificationsTargets: [],
   },
   doCreate: api.create,
@@ -105,6 +133,7 @@ const { modalRef, modalFormRef, modalForm, modalAction, handleAdd, handleDelete,
   refresh: () => $table.value?.handleSearch(),
 })
 
+// 表格字段
 const columns = [
   {
     title: '标题',
