@@ -28,7 +28,7 @@
         <DictSelect v-model:value="queryItems.state" dict-type-code="NOTICE_STATE" clearable />
       </MeQueryItem>
     </MeCrud>
-    <MeModal ref="modalRef" width="60%" class="h-95vh" :mask-closable="false">
+    <MeModal ref="modalRef" width="60%" :mask-closable="false">
       <n-form
         ref="modalFormRef"
         label-placement="left"
