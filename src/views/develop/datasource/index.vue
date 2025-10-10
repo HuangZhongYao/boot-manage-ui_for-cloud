@@ -52,7 +52,7 @@
             trigger: ['change', 'blur'],
           }"
         >
-          <DictSelect v-model:value="modalForm.type" dict-type-code="DATA_SOURCE_TYPE" :default-value="modalForm.type ? modalForm.type : modalForm.type = `mysql`" clearable />
+          <DictSelect v-model:value="modalForm.type" dict-type-code="DATA_SOURCE_TYPE" clearable />
         </n-form-item>
         <n-form-item
           label="驱动类"

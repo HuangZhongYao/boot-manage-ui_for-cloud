@@ -89,10 +89,8 @@
             <n-input v-model:value="treeOption.modalForm.code" type="text" />
           </n-form-item>
           <n-form-item path="sort" label="排序">
-            <n-input
+            <n-input-number
               v-model:value="treeOption.modalForm.sort"
-              type="text"
-              :allow-input="onlyAllowNumber"
               placeholder="值越小越靠前"
             />
           </n-form-item>
@@ -157,12 +155,10 @@
             <n-input v-model:value="tableOption.tabModalForm.code" type="text" />
           </n-form-item>
           <n-form-item label="排序" label-placement="left" path="sort">
-            <n-input
+            <n-input-number
               v-model:value="tableOption.tabModalForm.sort"
               default-value="0"
-              :allow-input="onlyAllowNumber"
               placeholder="值越小越靠前"
-              type="text"
             />
           </n-form-item>
           <n-form-item label="状态" :show-feedback="false" label-placement="left" path="enable">
@@ -209,7 +205,6 @@ import { NButton, NDataTable, NIcon, NSwitch } from 'naive-ui'
 import { ChevronForward } from '@vicons/ionicons5'
 import { withModifiers } from 'vue'
 import api from './api.js'
-import { onlyAllowNumber } from '@/utils/common.js'
 import isPermission from '@/utils/permissionsTool.js'
 
 // 定义组件名称。设置keepAlive需将组件的name设置成当前菜单的code。一定要这样写才可以切换页面时保存当前标签页的状态。
