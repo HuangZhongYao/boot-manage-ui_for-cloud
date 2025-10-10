@@ -91,11 +91,114 @@
           </n-button>
         </n-space>
       </n-card>
+
+      <n-card min-w-340 title="头像有 small、medium 和 large 大小，也可以自己设定尺寸。">
+        <n-space align="flex-end">
+          <NAvatar
+            size="small"
+            src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+          />
+          <NAvatar
+            size="medium"
+            src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+          />
+          <NAvatar
+            size="large"
+            src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+          />
+          <NAvatar
+            :size="48"
+            src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+          />
+        </n-space>
+      </n-card>
+
+      <n-card min-w-340 title="折叠面板">
+        <n-collapse>
+          <n-collapse-item title="青铜" name="1">
+            <div>可以</div>
+          </n-collapse-item>
+          <n-collapse-item title="白银" name="2">
+            <div>很好</div>
+          </n-collapse-item>
+          <n-collapse-item title="黄金" name="3">
+            <div>真棒</div>
+          </n-collapse-item>
+        </n-collapse>
+      </n-card>
+
+      <n-card min-w-540 title="水印">
+        <n-watermark
+          content="核心机密"
+          cross
+          selectable
+          :font-size="16"
+          :line-height="16"
+          :width="192"
+          :height="128"
+          :x-offset="12"
+          :y-offset="28"
+          :rotate="-15"
+        >
+          <n-table :bordered="false" :single-line="false">
+            <thead>
+              <tr>
+                <th>复盘</th>
+                <th>赋能</th>
+                <th>协同</th>
+                <th>...</th>
+                <th>串联</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>拉通</td>
+                <td>打通</td>
+                <td>树立</td>
+                <td>...</td>
+                <td>履约</td>
+              </tr>
+              <tr>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+              </tr>
+            </tbody>
+          </n-table>
+        </n-watermark>
+      </n-card>
+
+      <n-card min-w-440 title="穿梭框 Transfer">
+        <n-transfer
+          v-model:value="value"
+          :options="options"
+          :render-target-label="renderLabel"
+        />
+      </n-card>
+
+      <n-card min-w-440 title="骨架屏 Skeleton">
+        <n-space vertical>
+          <n-skeleton height="40px" width="33%" />
+          <n-skeleton height="40px" width="66%" :sharp="false" />
+          <n-skeleton height="40px" round />
+          <n-skeleton height="40px" circle />
+        </n-space>
+      </n-card>
+
+      <n-card min-w-140 title="跑马灯 Marquee">
+        <n-marquee>
+          谁用运气换呼吸 谁用灵魂换稻米 谁用运气换呼吸 谁用灵魂换稻米
+        </n-marquee>
+      </n-card>
     </n-space>
   </CommonPage>
 </template>
 
 <script setup>
+import { NAvatar } from 'naive-ui'
+import { h, ref } from 'vue'
 import { sleep } from '@/utils'
 
 const handleDelete = function () {
@@ -135,4 +238,62 @@ function notify(type) {
     keepAliveOnHover: true,
   })
 }
+
+const options = [
+  {
+    label: '07akioni',
+    value: 'https://avatars.githubusercontent.com/u/18677354?s=60&v=4',
+  },
+  {
+    label: 'amadeus711',
+    value: 'https://avatars.githubusercontent.com/u/46394163?s=60&v=4',
+  },
+  {
+    label: 'Talljack',
+    value: 'https://avatars.githubusercontent.com/u/34439652?s=60&v=4',
+  },
+  {
+    label: 'JiwenBai',
+    value: 'https://avatars.githubusercontent.com/u/43430022?s=60&v=4',
+  },
+  {
+    label: 'songjianet',
+    value: 'https://avatars.githubusercontent.com/u/19239641?s=60&v=4',
+  },
+]
+
+const renderLabel = function ({ option }) {
+  return h(
+    'div',
+    {
+      style: {
+        display: 'flex',
+        margin: '6px 0',
+      },
+    },
+    {
+      default: () => [
+        h(NAvatar, {
+          round: true,
+          src: option.value,
+          size: 'small',
+          fallbackSrc: 'https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg',
+        }),
+        h(
+          'div',
+          {
+            style: {
+              display: 'flex',
+              marginLeft: '6px',
+              alignSelf: 'center',
+            },
+          },
+          { default: () => option.label },
+        ),
+      ],
+    },
+  )
+}
+
+const value = ref([options[0].value])
 </script>
