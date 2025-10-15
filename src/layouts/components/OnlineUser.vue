@@ -5,7 +5,6 @@
  --------------------------------->
 <script setup>
 // 定义组件名称（用于 keepAlive，与菜单 code 一致）
-
 defineOptions({ name: 'OnlineUser' })
 // 列表数据
 const listData = ref([])
@@ -27,8 +26,8 @@ const showEmpty = computed(() => !loading.value && listData.value.length === 0)
       <!-- 加载骨架屏 -->
       <n-skeleton v-if="loading" text :repeat="5" class="mb-8" />
       <!-- 空状态 -->
-      <!--      <n-empty v-else-if="showEmpty" description="暂无数据" class="py-10" /> -->
-      <n-list hoverable clickable>
+      <n-empty v-else-if="showEmpty" description="暂无数据" class="py-10" />
+      <n-list clickable hoverable>
         <n-list-item>
           <n-thing title="相见恨晚" content-style="margin-top: 10px;">
             <template #description>
