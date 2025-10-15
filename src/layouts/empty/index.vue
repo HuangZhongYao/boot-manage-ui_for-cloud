@@ -7,10 +7,10 @@
  --------------------------------->
 
 <template>
-  <Notification />
+  <WebSocketNotification />
   <slot />
 </template>
 
 <script setup>
-import { Notification } from '@/layouts/components/index'
+import { WebSocketNotification } from '@/layouts/components/index'
 </script>

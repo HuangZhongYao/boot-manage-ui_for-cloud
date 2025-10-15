@@ -21,14 +21,14 @@
       <slot />
     </article>
 
-    <Notification />
+    <WebSocketNotification />
   </div>
 </template>
 
 <script setup>
 import SideBar from './sidebar/index.vue'
 import AppHeader from './header/index.vue'
-import { Notification } from '@/layouts/components/index'
+import { WebSocketNotification } from '@/layouts/components/index'
 import { useAppStore } from '@/store'
 
 const appStore = useAppStore()
