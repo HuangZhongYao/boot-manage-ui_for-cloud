@@ -11,14 +11,14 @@ const notificationsRecordCount = ref(0)
 </script>
 
 <template>
-  <n-badge class="mr-16" size="small" :value="notificationsRecordCount" :max="99" processing @click="showMyNotice = !showMyNotice">
-    <n-tooltip trigger="hover">
-      <template #trigger>
+  <n-tooltip trigger="hover">
+    <template #trigger>
+      <n-badge class="mr-16" size="small" :value="notificationsRecordCount" :max="99" processing @click="showMyNotice = !showMyNotice">
         <i class="i-fe:bell hover:cursor-pointer" />
-      </template>
-      消息通知
-    </n-tooltip>
-  </n-badge>
+      </n-badge>
+    </template>
+    消息通知
+  </n-tooltip>
   <n-drawer v-model:show="showMyNotice" width="50vh" close-on-esc placement="right" resizable>
     <n-drawer-content closable>
       <template #header>
