@@ -26,12 +26,9 @@
       <n-badge class="mr-16" size="small" :value="notificationsRecordCount" :max="99" processing @click="showMyNotice = !showMyNotice">
         <i class="i-fe:bell hover:cursor-pointer" />
       </n-badge>
-      <n-tooltip trigger="hover">
-        <template #trigger>
-          <OnlineUser />
-        </template>
-        在线用户
-      </n-tooltip>
+
+      <OnlineUser />
+
       <UserAvatar class="mr-16" />
       <n-drawer v-model:show="showMyNotice" width="50vh" close-on-esc placement="right" resizable>
         <n-drawer-content closable>

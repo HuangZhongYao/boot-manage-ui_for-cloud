@@ -77,4 +77,11 @@ export default {
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
   getAllRoles: () => request.get('/bm-system/role/queryList?enable=true'),
+
+  /**
+   * 查询在线用户
+   * @param params
+   * @returns {Promise}
+   */
+  queryOnlineUser: params => request.get('/bm-user/user/queryOnlineUser', { params }),
 }
