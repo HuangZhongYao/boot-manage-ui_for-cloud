@@ -24,7 +24,7 @@
     "echarts": "^5.5.1",
     "jsencrypt": "^3.5.4",
     "lodash-es": "^4.17.21",
-    "naive-ui": "^2.38.2",
+    "naive-ui": "^2.43.0",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
     "sockjs-client": "^1.6.1",

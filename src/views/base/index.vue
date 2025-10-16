@@ -279,11 +279,29 @@
         </n-timeline>
       </n-card>
     </n-space>
+
+    <n-space size="large" mt-30>
+      <n-card min-w-740 title="热力图 Heatmap">
+        <n-scrollbar x-scrollable style="max-width: 100%">
+          <n-heatmap
+            :data="yearData"
+            :loading-data="yearData"
+            :first-day-of-week="firstDayOfWeek"
+            :loading="loadingh"
+            :size="size"
+            :show-week-labels="showWeekLabels"
+            :show-month-labels="showMonthLabels"
+            :show-color-indicator="showColorIndicator"
+            :fill-calendar-leading="value === 'recent'"
+          />
+        </n-scrollbar>
+      </n-card>
+    </n-space>
   </CommonPage>
 </template>
 
 <script setup>
-import { NAvatar } from 'naive-ui'
+import { NAvatar, heatmapMockData } from 'naive-ui'
 import { h, ref } from 'vue'
 import { sleep } from '@/utils'
 
@@ -384,6 +402,16 @@ const renderLabel = function ({ option }) {
 const value = ref([options[0].value])
 
 const tags = ref(['教师', '程序员'])
+
+const yearData = computed(() => {
+  return heatmapMockData('recent')
+})
+const showWeekLabels = ref(true)
+const showMonthLabels = ref(true)
+const showColorIndicator = ref(true)
+const loadingh = ref(false)
+const firstDayOfWeek = ref(0)
+const size = ref('medium')
 </script>
 
 <style scoped>
