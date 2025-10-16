@@ -30,7 +30,7 @@ function getOnlineUser() {
 <template>
   <n-tooltip trigger="hover">
     <template #trigger>
-      <i class="i-me:online-user mr-16 h-24 w-24 hover:cursor-pointer" @click="getOnlineUser" />
+      <i class="i-me:online-user mr-16 h-20 w-20 hover:cursor-pointer" @click="getOnlineUser" />
     </template>
     在线用户
   </n-tooltip>
