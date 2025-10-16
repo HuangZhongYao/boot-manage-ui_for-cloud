@@ -5,7 +5,7 @@
  * @Email: zclzone@outlook.com
  * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  **********************************/
-
+import roleApi from '../role/api'
 import { request } from '@/utils'
 
 export default {
@@ -76,7 +76,7 @@ export default {
    * 获取所有已启用的角色。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
-  getAllRoles: () => request.get('/bm-system/role/queryList?enable=true'),
+  getAllRoles: () => roleApi.getAllRoles(),
 
   /**
    * 查询在线用户
@@ -84,4 +84,10 @@ export default {
    * @returns {Promise}
    */
   queryOnlineUser: params => request.get('/bm-user/user/queryOnlineUser', { params }),
+
+  /**
+   * 查询所有用户
+   * @returns {*}
+   */
+  getAllUsers: () => request.get('/bm-user/user/queryAllUserList'),
 }

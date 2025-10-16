@@ -6,6 +6,7 @@
  * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
  **********************************/
 
+import userApi from '../user/api'
 import { request } from '@/utils'
 
 export default {
@@ -20,6 +21,8 @@ export default {
   // 设置角色启用状态
   setState: data => request.patch('/bm-system/role/setState', data),
   // 查询全部用户
-  getAllUsers: () => request.get('/bm-system/user/queryAllUserList'),
+  getAllUsers: () => userApi.getAllUsers(),
+  // 获取所有已启用的角色
+  getAllRoles: () => request.get('/bm-system/role/queryList?enable=true'),
   getAllPermissionTree: () => request.get('/bm-system/resources/resourcesTree'),
 }

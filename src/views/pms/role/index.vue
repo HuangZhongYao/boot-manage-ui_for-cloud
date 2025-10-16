@@ -14,102 +14,48 @@
         新增角色
       </NButton>
     </template>
-
-    <MeCrud
-      ref="$table"
-      v-model:query-items="queryItems"
-      :scroll-x="1200"
-      :columns="columns"
-      :get-data="api.read"
-      card-title-key="name"
-    >
-      <MeQueryItem label="角色名" :label-width="50">
-        <n-input v-model:value="queryItems.name" type="text" placeholder="请输入角色名" clearable />
-      </MeQueryItem>
-      <MeQueryItem label="状态" :label-width="50">
-        <n-select
-          v-model:value="queryItems.enable"
-          clearable
-          :options="[
-            { label: '启用', value: true },
-            { label: '停用', value: false },
-          ]"
-        />
-      </MeQueryItem>
-    </MeCrud>
-
-    <MeModal ref="modalRef" width="520px">
-      <n-form
-        ref="modalFormRef"
-        label-placement="left"
-        label-align="left"
-        :label-width="80"
-        :model="modalForm"
+    <div id="drawer-target">
+      <MeCrud
+        id="crud"
+        ref="$table"
+        v-model:query-items="queryItems"
+        :scroll-x="1200"
+        :columns="columns"
+        :get-data="api.read"
+        card-title-key="name"
       >
-        <n-form-item
-          label="角色名"
-          path="name"
-          :rule="{
-            required: true,
-            message: '请输入角色名',
-            trigger: ['input', 'blur'],
-          }"
-        >
-          <n-input v-model:value="modalForm.name" />
-        </n-form-item>
-        <n-form-item
-          label="角色编码"
-          path="code"
-          :rule="{
-            required: true,
-            message: '请输入角色编码',
-            trigger: ['input', 'blur'],
-          }"
-        >
-          <n-input v-model:value="modalForm.code" :disabled="modalAction !== 'add'" />
-        </n-form-item>
-        <n-form-item label="角色图标" path="icon">
-          <n-select v-model:value="modalForm.icon" :default-value="modalForm.icon ? modalForm.icon : modalForm.icon = `i-me:role`" :options="iconOptions" clearable filterable />
-        </n-form-item>
-        <n-form-item label="权限" path="permissionIds">
-          <n-tree
-            key-field="id"
-            label-field="name"
-            :selectable="false"
-            :data="permissionTree"
-            :checked-keys="modalForm.permissionIds"
-            :on-update:checked-keys="(keys) => (modalForm.permissionIds = keys)"
-
-            checkable default-expand-all check-on-click
-            class="cus-scroll max-h-200 w-full"
+        <MeQueryItem label="角色名" :label-width="50">
+          <n-input v-model:value="queryItems.name" type="text" placeholder="请输入角色名" clearable />
+        </MeQueryItem>
+        <MeQueryItem label="状态" :label-width="50">
+          <n-select
+            v-model:value="queryItems.enable"
+            clearable
+            :options="[
+              { label: '启用', value: true },
+              { label: '停用', value: false },
+            ]"
           />
-        </n-form-item>
-        <n-form-item label="状态" path="enable">
-          <NSwitch v-model:value="modalForm.enable" :default-value="true" :checked-value="true" :unchecked-value="false">
-            <template #checked>
-              启用
-            </template>
-            <template #unchecked>
-              停用
-            </template>
-          </NSwitch>
-        </n-form-item>
-        <n-form-item label="状态" path="enable">
-          <n-input v-model:value="modalForm.remark" type="textarea" maxlength="200" round clearable show-count />
-        </n-form-item>
-      </n-form>
-    </MeModal>
-    <n-drawer v-model:show="showEditRoleFlag" :width="502">
+        </MeQueryItem>
+      </MeCrud>
+    </div>
+    <n-drawer
+      v-model:show="showDrawerFlag"
+      to="#drawer-target"
+      :trap-focus="false"
+      :block-scroll="false"
+      :width="502"
+    >
       <n-drawer-content>
         <template #header>
           {{ editRoleTitle }}
         </template>
         <n-form
-          ref="editRoleRef"
+          ref="drawerRoleFormRef"
           label-placement="left"
           label-align="left"
           :label-width="80"
-          :model="editRoleForm"
+          :model="drawerRoleForm"
         >
           <n-form-item
             label="角色名"
@@ -120,7 +66,7 @@
               trigger: ['input', 'blur'],
             }"
           >
-            <n-input v-model:value="editRoleForm.name" />
+            <n-input v-model:value="drawerRoleForm.name" :disabled="drawerAction === 'view'" />
           </n-form-item>
           <n-form-item
             label="角色编码"
@@ -131,27 +77,36 @@
               trigger: ['input', 'blur'],
             }"
           >
-            <n-input v-model:value="editRoleForm.code" :disabled="modalAction !== 'add'" />
+            <n-input v-model:value="drawerRoleForm.code" :disabled="drawerAction === 'view'" />
           </n-form-item>
-          <n-form-item label="角色图标" path="icon">
-            <n-select v-model:value="editRoleForm.icon" :default-value="editRoleForm.icon ? editRoleForm.icon : editRoleForm.icon = `i-me:role`" :options="iconOptions" clearable filterable />
+          <n-form-item label="角色图标" path="icon" required>
+            <n-select v-model:value="drawerRoleForm.icon" :disabled="drawerAction === 'view'" :default-value="drawerRoleForm.icon ? drawerRoleForm.icon : drawerRoleForm.icon = `i-me:role`" :options="iconOptions" clearable filterable />
           </n-form-item>
           <n-form-item label="权限" path="permissionIds">
             <n-tree
+              block-line
               key-field="id"
               label-field="name"
               :selectable="false"
               :data="permissionTree"
-              :checked-keys="editRoleForm.permissionIds"
-              :on-update:checked-keys="(keys) => (editRoleForm.permissionIds = keys)"
+              :disabled="drawerAction === 'view'"
+              :checked-keys="drawerRoleForm.permissionIds"
+              :on-update:checked-keys="(keys) => (drawerRoleForm.permissionIds = keys)"
               checkable
+              cascade
               check-on-click
               default-expand-all
-              class="cus-scroll max-h-200 w-full"
+              class="cus-scroll max-h-400 min-h-250 w-full"
             />
           </n-form-item>
-          <n-form-item label="状态" path="enable">
-            <NSwitch v-model:value="editRoleForm.enable" :default-value="true" :checked-value="true" :unchecked-value="false">
+          <n-form-item label="状态" path="enable" required>
+            <NSwitch
+              v-model:value="drawerRoleForm.enable"
+              :disabled="drawerAction === 'view'"
+              :default-value="true"
+              :checked-value="true"
+              :unchecked-value="false"
+            >
               <template #checked>
                 启用
               </template>
@@ -161,14 +116,14 @@
             </NSwitch>
           </n-form-item>
           <n-form-item label="备注" path="remark">
-            <n-input v-model:value="editRoleForm.remark" type="textarea" maxlength="200" round clearable show-count />
+            <n-input v-model:value="drawerRoleForm.remark" :disabled="drawerAction === 'view'" type="textarea" maxlength="200" round clearable show-count />
           </n-form-item>
         </n-form>
         <template #footer>
-          <NButton @click="cancelEditRole">
+          <NButton @click="cancelRole">
             取消
           </NButton>
-          <NButton :loading="showEditRoleSubmitFlag" type="primary" class="ml-20" @click="saveEditRole">
+          <NButton :loading="drawerSaveLoading" :disabled="drawerAction === 'view'" type="primary" class="ml-20" @click="saveRole">
             保存
           </NButton>
         </template>
@@ -182,7 +137,7 @@
       preset="dialog"
       :mask-closable="false"
       close-on-esc
-      type="success"
+      type="info"
       :loading="!selectUserFlag"
       positive-text="保存"
       negative-text="取消"
@@ -224,7 +179,7 @@ import { NAvatar, NButton, NSwitch } from 'naive-ui'
 import { ref } from 'vue'
 import icons from 'isme:icons'
 import api from './api'
-import { MeCrud, MeModal, MeQueryItem } from '@/components'
+import { MeCrud, MeQueryItem } from '@/components'
 import { useCrud } from '@/composables'
 import { formatDateTime } from '@/utils/index.js'
 import isPermission from '@/utils/permissionsTool.js'
@@ -247,41 +202,71 @@ const iconOptions = icons.map(item => ({
 }))
 
 // 定义变量控制编辑角色抽屉显示
-const showEditRoleFlag = ref(false)
-const showEditRoleSubmitFlag = ref(false)
-const editRoleRef = ref(null)
-const editRoleForm = ref({})
+const showDrawerFlag = ref(false)
+const drawerSaveLoading = ref(false)
+const drawerRoleFormRef = ref(null)
+const drawerRoleForm = ref({})
+const drawerAction = ref('view')
 let editRoleTitle
+
+function handleView(row) {
+  drawerAction.value = 'view'
+  editRoleTitle = `${row.name}角色`
+  drawerRoleForm.value = { ...row }
+  showDrawerFlag.value = true
+}
+
+function handleAdd() {
+  drawerAction.value = 'add'
+  editRoleTitle = `新增角色`
+  drawerRoleForm.value = {}
+  showDrawerFlag.value = true
+}
 
 /**
  * 点击编辑角色
  * @param row 角色数据
  */
 function handelEditRole(row) {
+  drawerAction.value = 'edit'
   editRoleTitle = `编辑${row.name}角色`
-  editRoleForm.value = { ...row }
-  showEditRoleFlag.value = true
+  drawerRoleForm.value = { ...row }
+  showDrawerFlag.value = true
 }
 
 /**
- * 保存编辑角色
+ * 抽屉保存
  */
-function saveEditRole() {
-  editRoleRef.value.validate((errors) => {
+async function saveRole() {
+  drawerRoleFormRef.value.validate(async (errors) => {
     if (!errors) {
       // 验证通过则提交
-      showEditRoleSubmitFlag.value = true
-      api.update(editRoleForm.value).then((res) => {
-        if (res.result) {
-          showEditRoleFlag.value = false
+      drawerSaveLoading.value = true
+      try {
+        // 统一使用await处理异步请求，根据操作类型选择API
+        const res = drawerAction.value === 'add'
+          ? await api.create(drawerRoleForm.value)
+          : await api.update(drawerRoleForm.value)
+
+        if (res.success) {
+          showDrawerFlag.value = false
           $message.success('操作成功')
         }
         else {
-          $message.warning(res.message)
+          $message.warning(res.message || '操作失败')
         }
-        showEditRoleSubmitFlag.value = false
+      }
+      catch (error) {
+        // 捕获请求可能发生的异常
+        $message.error('请求失败，请稍后重试')
+        console.error('保存角色失败:', error)
+      }
+      finally {
+        // 无论成功失败都关闭加载状态
+        drawerSaveLoading.value = false
+        // 刷新表格数据
         $table.value?.handleSearch()
-      })
+      }
     }
   })
 }
@@ -289,8 +274,8 @@ function saveEditRole() {
 /**
  * 取消编辑角色
  */
-function cancelEditRole() {
-  showEditRoleFlag.value = false
+function cancelRole() {
+  showDrawerFlag.value = false
 }
 
 // 分配用户模态框
@@ -408,7 +393,7 @@ const renderLabel = function ({ option }) {
   )
 }
 
-const { modalRef, modalFormRef, modalAction, modalForm, handleAdd, handleDelete, handleEdit, handleView }
+const { modalAction, handleDelete }
   = useCrud({
     name: '角色',
     doCreate: api.create,
@@ -472,7 +457,7 @@ const columns = [
           NButton,
           {
             size: 'tiny',
-            onClick: () => handleView(),
+            onClick: () => handleView(row),
           },
           {
             default: () => '查看',
@@ -558,3 +543,11 @@ function setDisabledRecursively(items) {
   })
 }
 </script>
+
+<style scoped>
+#drawer-target {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+</style>
