@@ -177,7 +177,9 @@
           :render-target-label="renderLabel"
         />
       </n-card>
+    </n-space>
 
+    <n-space size="large" mt-30>
       <n-card min-w-440 title="骨架屏 Skeleton">
         <n-space vertical>
           <n-skeleton height="40px" width="33%" />
@@ -187,10 +189,94 @@
         </n-space>
       </n-card>
 
-      <n-card min-w-140 title="跑马灯 Marquee">
+      <n-card max-w-290 title="跑马灯 Marquee">
         <n-marquee>
           谁用运气换呼吸 谁用灵魂换稻米 谁用运气换呼吸 谁用灵魂换稻米
         </n-marquee>
+      </n-card>
+
+      <n-card min-w-340 title="文本省略 Ellipsis">
+        点击缩略文本展开完整文本的功能。
+        <template #footer>
+          <n-ellipsis expand-trigger="click" line-clamp="2" :tooltip="false">
+            电灯熄灭 物换星移 泥牛入海<br>
+            黑暗好像 一颗巨石 按在胸口<br>
+            独脚大盗 百万富翁 摸爬滚打<br>
+            黑暗好像 一颗巨石 按在胸口
+          </n-ellipsis>
+        </template>
+      </n-card>
+
+      <n-card max-w-440 title="轮播图 Carousel">
+        <n-carousel autoplay dot-type="dot" show-dots>
+          <img
+            class="carousel-img"
+            src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel1.jpeg"
+          >
+          <img
+            class="carousel-img"
+            src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel2.jpeg"
+          >
+          <img
+            class="carousel-img"
+            src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel3.jpeg"
+          >
+          <img
+            class="carousel-img"
+            src="https://naive-ui.oss-cn-beijing.aliyuncs.com/carousel-img/carousel4.jpeg"
+          >
+        </n-carousel>
+      </n-card>
+    </n-space>
+
+    <n-space size="large" mt-30>
+      <n-card
+        min-w-340 title="分割线 Divider"
+      >
+        啊
+        <n-divider title-placement="left">
+          左
+        </n-divider>
+        啊
+        <n-divider title-placement="right">
+          右
+        </n-divider>
+        啊
+        <n-divider dashed>
+          虚线
+        </n-divider>
+        啊
+      </n-card>
+
+      <n-card min-w-340 title="动态标签 Dynamic Tags">
+        <n-dynamic-tags v-model:value="tags" />
+      </n-card>
+
+      <n-card min-w-340 title="时间线 Timeline">
+        <n-timeline>
+          <n-timeline-item content="啊" />
+          <n-timeline-item
+            type="success"
+            title="成功"
+            content="哪里成功"
+            time="2018-04-03 20:46"
+          />
+          <n-timeline-item type="error" content="哪里错误" time="2018-04-03 20:46" />
+          <n-timeline-item
+            type="warning"
+            title="警告"
+            content="哪里警告"
+            time="2018-04-03 20:46"
+          />
+          <n-timeline-item
+            type="info"
+            title="信息"
+            content="是的"
+            time="2018-04-03 20:46"
+            line-type="dashed"
+          />
+          <n-timeline-item content="啊" />
+        </n-timeline>
       </n-card>
     </n-space>
   </CommonPage>
@@ -296,4 +382,13 @@ const renderLabel = function ({ option }) {
 }
 
 const value = ref([options[0].value])
+
+const tags = ref(['教师', '程序员'])
 </script>
+
+<style scoped>
+.carousel-img {
+  height: 240px;
+  object-fit: cover;
+}
+</style>
