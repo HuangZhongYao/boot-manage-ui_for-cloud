@@ -8,6 +8,11 @@ export default {
    */
   read: (params = {}) => request.get('/bm-system/notifications/queryMyNotificationRecords', { params }),
   /**
+   * 获取未读通知记录数
+   * @returns {Promise}
+   */
+  countUnreadNotifications: () => request.get('/bm-system/notifications/countUnreadNotifications'),
+  /**
    * 已读通知记录
    * @param data
    * @returns {*}
