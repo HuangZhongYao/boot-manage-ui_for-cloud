@@ -128,7 +128,7 @@
           <p class="text-14 opacity-60">
             👉点击
             <b class="mx-2 transition hover:text-primary">
-              <a href="https://isme.top" target="_blank">更多</a>
+              <a href="#" target="_blank">更多</a>
             </b>
             查看更多实用功能，持续开发中...
           </p>
