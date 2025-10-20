@@ -1,5 +1,6 @@
 <script setup>
 import dictApi from '@/api/dict'
+import { useSystemStore } from '@/store/index'
 
 const props = defineProps({
   // 字典类型编码
@@ -29,6 +30,8 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['update:modelValue'])
 
+const systemStore = useSystemStore()
+
 // 选项数据
 const options = ref([])
 
@@ -40,7 +43,13 @@ async function loadOptions() {
   }
 
   try {
-    const { result = [] } = await dictApi.getDictDataQueryListByCode({ dictTypeCode: props.dictTypeCode })
+    // 从状态管理中获取字典数据
+    let result = systemStore.getDictionaryDataByType(props.dictTypeCode)
+    // 如果获取不到则从API中获取
+    if (!result || result.length === 0) {
+      const res = await dictApi.getDictDataQueryListByCode({ dictTypeCode: props.dictTypeCode })
+      result = res.result || []
+    }
     options.value = result.map(item => ({
       label: () =>
         h('span', { class: 'flex items-center' }, [

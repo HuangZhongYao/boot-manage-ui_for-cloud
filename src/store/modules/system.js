@@ -25,22 +25,24 @@ export const useSystemStore = defineStore('system', {
      * @param {string} type - 字典类型编码
      * @returns {Array} 匹配指定类型的字典数据数组
      */
-    getDictionaryDataByType(type) {
-      return this.dictionaryData.filter(item => item.typeCode === type)
+    getDictionaryDataByType() {
+      return (type) => {
+        return this.dictionaryData.filter(item => item.typeCode === type)
+      }
     },
     /**
      * 获取系统设置
-     * @returns {Object} 系统设置对象
+     * @returns {object} 系统设置对象
      */
     getSystemSettings() {
-      return this.systemSettings
+      return () => this.systemSettings
     },
     /**
      * 获取用户设置
-     * @returns {Object} 用户设置对象
+     * @returns {object} 用户设置对象
      */
     getUserSettings() {
-      return this.userSettings
+      return () => this.userSettings
     },
   },
   actions: {
@@ -66,14 +68,14 @@ export const useSystemStore = defineStore('system', {
     },
     /**
      * 设置系统设置
-     * @param {Object} systemSettings - 系统设置对象，默认为空对象
+     * @param {object} systemSettings - 系统设置对象，默认为空对象
      */
     setSystemSettings(systemSettings = {}) {
       this.systemSettings = systemSettings
     },
     /**
      * 设置用户设置
-     * @param {Object} userSettings - 用户设置对象，默认为空对象
+     * @param {object} userSettings - 用户设置对象，默认为空对象
      */
     setUserSettings(userSettings = {}) {
       this.userSettings = userSettings

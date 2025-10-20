@@ -100,11 +100,7 @@
           </n-form-item>
           <n-form-item label="性别" path="gender">
             <QuestionLabel label="" content="请选择性别" />
-            <n-select
-              v-model:value="profileForm.gender"
-              :options="genders"
-              placeholder="请选择性别"
-            />
+            <DictSelect v-model:value="profileForm.gender" dict-type-code="SYS:GENDER" />
           </n-form-item>
           <n-form-item label="电话" path="phone">
             <QuestionLabel label="" content="请输入电话" />
@@ -130,7 +126,7 @@
 
 <script setup>
 import api from './api'
-import { MeModal } from '@/components'
+import { DictSelect, MeModal } from '@/components'
 import { useForm, useModal } from '@/composables'
 import { useUserStore } from '@/store'
 import { getUserInfo } from '@/store/helper'
