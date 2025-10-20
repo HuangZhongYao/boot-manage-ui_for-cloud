@@ -46,7 +46,7 @@ onMounted(() => {
         </div>
       </template>
       <!-- 嵌入的通知内容组件 -->
-      <MyNotice />
+      <MyNotice @have-read-one="notificationsRecordCount = notificationsRecordCount === 0 ? 0 : notificationsRecordCount - 1 " @read-all="notificationsRecordCount = 0" />
     </n-drawer-content>
   </n-drawer>
 </template>

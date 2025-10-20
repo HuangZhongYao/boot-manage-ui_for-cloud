@@ -4,7 +4,7 @@ import api from './api.js'
 // 定义组件名称（用于 keepAlive，与菜单 code 一致）
 defineOptions({ name: 'MyNotice' })
 // 定义更新事件
-const emit = defineEmits(['update'])
+const emit = defineEmits(['haveReadOne', 'readAll'])
 // 查询参数（可选）
 const queryItems = ref({})
 
@@ -108,7 +108,10 @@ function readRecords(data, row) {
       // 执行标记已读
       api.readNotificationRecords(data).then((res) => {
         item.readState = res.result
-        if (!res.result) {
+        if (res.result) {
+          emit('haveReadOne')
+        }
+        else {
           $message.warning('操作失败')
         }
       })
