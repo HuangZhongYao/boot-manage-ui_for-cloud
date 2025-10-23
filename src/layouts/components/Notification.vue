@@ -11,12 +11,14 @@ import api from '@/views/notice/my-notice/api'
 // 控制通知抽屉显示状态的响应式变量
 const showMyNotice = ref(false)
 // 未读通知数量的响应式变量
-const notificationsRecordCount = ref(0)
+const notificationsUnreadRecordCount = ref(0)
+// 未读通知数量的总
+const notificationsRecordTotalCount = ref(0)
 
 // 组件挂载时获取未读通知数量
 onMounted(() => {
   api.countUnreadNotifications().then((res) => {
-    notificationsRecordCount.value = res.result
+    notificationsUnreadRecordCount.value = res.result
   })
 })
 </script>
@@ -26,7 +28,7 @@ onMounted(() => {
   <n-tooltip trigger="hover">
     <template #trigger>
       <!-- 带未读数量徽标的铃铛图标 -->
-      <n-badge class="mr-16" size="small" :value="notificationsRecordCount" :max="99" processing @click="showMyNotice = !showMyNotice">
+      <n-badge class="mr-16" size="small" :value="notificationsUnreadRecordCount" :max="200" processing @click="showMyNotice = !showMyNotice">
         <i class="icon-ld i-fe:bell hover:cursor-pointer" />
       </n-badge>
     </template>
@@ -41,12 +43,16 @@ onMounted(() => {
           <span class="ml-1vh">我的通知</span>
           <!-- 显示通知总数的标签 -->
           <n-tag type="info" round size="small" :bordered="false" class="ml-1vh font-size-1vh">
-            共 {{ notificationsRecordCount }} 条
+            共 {{ notificationsRecordTotalCount }} 条
           </n-tag>
         </div>
       </template>
       <!-- 嵌入的通知内容组件 -->
-      <MyNotice @have-read-one="notificationsRecordCount = notificationsRecordCount === 0 ? 0 : notificationsRecordCount - 1 " @read-all="notificationsRecordCount = 0" />
+      <MyNotice
+        @have-read-one="notificationsUnreadRecordCount = notificationsUnreadRecordCount === 0 ? 0 : notificationsUnreadRecordCount - 1 "
+        @read-all="notificationsUnreadRecordCount = 0"
+        @total="(total) => notificationsRecordTotalCount = total"
+      />
     </n-drawer-content>
   </n-drawer>
 </template>

@@ -4,18 +4,17 @@ import api from './api.js'
 // 定义组件名称（用于 keepAlive，与菜单 code 一致）
 defineOptions({ name: 'MyNotice' })
 // 定义更新事件
-const emit = defineEmits(['haveReadOne', 'readAll'])
+const emit = defineEmits(['haveReadOne', 'readAll', 'total'])
 // 查询参数（可选）
 const queryItems = ref({})
-
 // 加载状态
 const loading = ref(false)
-
 // 列表数据
 const listData = ref([])
 // 空状态判定
 const showEmpty = computed(() => !loading.value && listData.value.length === 0)
-
+// 消息总数
+const totalNum = ref(0)
 // 类型映射（可根据后端字段自适应）
 function getTypeInfo(item) {
   const label = item.typeName || item.type || item.category || '系统'
@@ -35,6 +34,7 @@ let prevBodyOverflow = ''
 onMounted(() => {
   prevBodyOverflow = document.body.style.overflow
   document.body.style.overflow = 'hidden'
+  handleQuery()
 })
 onUnmounted(() => {
   document.body.style.overflow = prevBodyOverflow
@@ -85,6 +85,7 @@ async function handleQuery() {
     // 分页信息
     pagination.itemCount = res.result.total ?? res.result.length
     pagination.pages = res.result.pages ?? 1
+    totalNum.value = pagination.itemCount
 
     onUpdateItemCount()
   }
@@ -136,6 +137,7 @@ function handleDelete(item) {
           if (index > -1) {
             listData.value.splice(index, 1)
             pagination.itemCount = pagination.itemCount - 1
+            totalNum.value = pagination.itemCount
             onUpdateItemCount()
           }
         }
@@ -154,13 +156,8 @@ function handleDelete(item) {
 }
 
 function onUpdateItemCount() {
-  emit('update', pagination.itemCount)
+  emit('total', totalNum.value)
 }
-
-// 页面加载时查询数据
-onMounted(() => {
-  handleQuery()
-})
 </script>
 
 <template>
@@ -171,7 +168,7 @@ onMounted(() => {
   <n-empty v-else-if="showEmpty" description="暂无通知" class="py-10" />
 
   <!-- 通知列表 -->
-  <n-list v-else hoverable clickable bordered class="border-none">
+  <n-list v-else clickable bordered hoverable class="border-none">
     <Transition
       v-for="item in listData"
       :key="item.id"
@@ -217,8 +214,8 @@ onMounted(() => {
               <n-tooltip trigger="hover">
                 <template #trigger>
                   <n-button
-                    quaternary
-                    round
+
+                    round quaternary
                     @click="readRecords({ ids: [item.id], readAll: false }, item)"
                   >
                     <template #icon>
