@@ -59,17 +59,6 @@
           <DictSelect v-model:value="modalForm.level" dict-type-code="SYS:TZ:JB" />
         </n-form-item>
         <n-form-item
-          label="级别"
-          path="type"
-          :rule="{
-            required: true,
-            message: '请选择通知类型',
-            trigger: ['input', 'blur'],
-          }"
-        >
-          <DictSelect v-model:value="modalForm.type" dict-type-code="SYS:TZ:LX" />
-        </n-form-item>
-        <n-form-item
           label="全体通知"
           path="allNotifications"
           required
@@ -239,7 +228,30 @@ const columns = [
  * @param row
  */
 function handlePublish(row) {
-  api.publish({ id: row.id })
+  const d = $dialog.info({
+    content: '确定发布？',
+    title: '提示',
+    positiveText: '确定',
+    negativeText: '取消',
+    async onPositiveClick() {
+      try {
+        d.loading = true
+        const result = await api.publish({ id: row.id })
+        if (result.success) {
+          $message.success(result.message)
+          $table.value?.handleSearch()
+        }
+        else {
+          $message.error(result.message)
+        }
+        d.loading = false
+      }
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      catch (error) {
+        d.loading = false
+      }
+    },
+  })
 }
 
 /**
