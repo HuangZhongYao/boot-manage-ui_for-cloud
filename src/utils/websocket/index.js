@@ -1,6 +1,6 @@
 // 导入SockJS库，用于创建WebSocket连接的备选传输方式
-import SockJS from 'sockjs-client'
 // 导入STOMP.js库，用于处理STOMP协议的消息通信
+import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import { useAuthStore } from '@/store/index.js'
 // 订阅主题
@@ -34,7 +34,7 @@ class WebSocketService {
     // 重连尝试次数计数器
     this.reconnectAttempts = 0
     // 最大重连尝试次数限制
-    this.maxReconnectAttempts = 5
+    this.maxReconnectAttempts = 10
     // 重连延迟时间（毫秒）
     this.reconnectDelay = 5000
   }
@@ -42,10 +42,11 @@ class WebSocketService {
   /**
    * 连接到WebSocket服务器。
    * @param {string} url - WebSocket服务器地址。
+   * @param connectHeaders - 连接请求头部
    * @param {Function} onConnectCallback - 连接成功时的回调函数。
    * @param {Function} onErrorCallback - 发生错误时的回调函数。
    */
-  connect(url, onConnectCallback, onErrorCallback) {
+  connect(url, connectHeaders, onConnectCallback, onErrorCallback) {
     try {
       if (this.connected.value) {
         console.warn('已是连接状态')
@@ -62,12 +63,19 @@ class WebSocketService {
       this.stompClient = new Client({
         // WebSocket工厂函数，返回SockJS实例
         webSocketFactory: () => socket,
+        connectHeaders,
         // 重连延迟时间，设置为5000毫秒
-        reconnectDelay: 5000,
+        reconnectDelay: this.reconnectDelay,
         // 接收心跳检测间隔，设置为4000毫秒
         heartbeatIncoming: 4000,
         // 发送心跳检测间隔，设置为4000毫秒
         heartbeatOutgoing: 4000,
+        debug: (msg) => {
+          // 只在开发环境中输出调试信息
+          if (import.meta.env.DEV) {
+            console.warn('[STOMP]', msg)
+          }
+        },
         // 连接成功回调函数
         onConnect: (frame) => {
           // 输出连接成功的日志信息
@@ -87,6 +95,8 @@ class WebSocketService {
           console.warn('Disconnected')
           // 设置连接状态为未连接
           this.connected.value = false
+          // 重新连接
+          this.reconnect()
         },
         // STOMP错误回调函数
         onStompError: (frame) => {
@@ -116,6 +126,25 @@ class WebSocketService {
   }
 
   /**
+   * 重新连接方法
+   */
+  reconnect() {
+    // 增加重连尝试次数
+    this.reconnectAttempts++
+
+    // 如果达到最大重连次数，停止重连
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('达到最大重连次数，停止重连')
+      return
+    }
+
+    // 延迟后重新连接
+    setTimeout(() => {
+      this.initializeConnect()
+    }, this.reconnectDelay)
+  }
+
+  /**
    * 初始化WebSocket连接。
    */
   initializeConnect() {
@@ -129,11 +158,13 @@ class WebSocketService {
     const authStore = useAuthStore()
     // 使用Auth Store获取访问令牌
     const { authHeaderKey, accessToken, tokenPrefix } = authStore
+
     // 连接
     this.connect(
       `${import.meta.env.VITE_WEBSOCKET_ENDPOINT}?token=abc123&${authHeaderKey}=${tokenPrefix + accessToken}`,
+      { [authHeaderKey]: tokenPrefix + accessToken },
       (frame) => {
-        console.log('WebSocket connection success: frame ', frame)
+        console.warn('WebSocket connection success: frame ', frame)
       },
       (error) => {
         console.error('WebSocket connection failed:', error)

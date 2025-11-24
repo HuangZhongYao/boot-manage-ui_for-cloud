@@ -191,7 +191,9 @@
 
       <n-card max-w-290 title="跑马灯 Marquee">
         <n-marquee>
-          谁用运气换呼吸 谁用灵魂换稻米 谁用运气换呼吸 谁用灵魂换稻米
+          <template #default>
+            谁用运气换呼吸 谁用灵魂换稻米 谁用运气换呼吸 谁用灵魂换稻米
+          </template>
         </n-marquee>
       </n-card>
 
