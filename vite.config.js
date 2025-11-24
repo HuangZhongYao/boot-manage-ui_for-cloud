@@ -78,7 +78,14 @@ export default defineConfig(({ mode }) => {
           configure: (proxy, options) => {
             // 在代理响应中添加原始URL信息。
             proxy.on('proxyRes', (proxyRes, req) => {
-              proxyRes.headers['x-real-url'] = new URL(req.url || '', options.target)?.href || ''
+              try {
+                const target = typeof options.target === 'string' ? options.target : options.target?.href || ''
+                proxyRes.headers['x-real-url'] = new URL(req.url || '', target)?.href || ''
+              }
+              catch (e) {
+                console.warn('Failed to construct real URL:', e.message)
+                proxyRes.headers['x-real-url'] = req.url || ''
+              }
             })
           },
         },
