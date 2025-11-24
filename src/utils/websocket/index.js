@@ -1,6 +1,4 @@
 // 导入SockJS库，用于创建WebSocket连接的备选传输方式
-// 导入STOMP.js库，用于处理STOMP协议的消息通信
-import SockJS from 'sockjs-client'
 import { Client } from '@stomp/stompjs'
 import { useAuthStore } from '@/store/index.js'
 // 订阅主题
@@ -36,7 +34,7 @@ class WebSocketService {
     // 最大重连尝试次数限制
     this.maxReconnectAttempts = 10
     // 重连延迟时间（毫秒）
-    this.reconnectDelay = 5000
+    this.reconnectDelay = 10000
   }
 
   /**
@@ -56,20 +54,17 @@ class WebSocketService {
         }
         return
       }
-      // 创建SockJS连接，提供WebSocket的备选传输方式
-      const socket = new SockJS(url)
 
       // 创建STOMP客户端
       this.stompClient = new Client({
-        // WebSocket工厂函数，返回SockJS实例
-        webSocketFactory: () => socket,
+        brokerURL: url,
         connectHeaders,
         // 重连延迟时间，设置为5000毫秒
         reconnectDelay: this.reconnectDelay,
-        // 接收心跳检测间隔，设置为4000毫秒
-        heartbeatIncoming: 4000,
-        // 发送心跳检测间隔，设置为4000毫秒
-        heartbeatOutgoing: 4000,
+        // 接收心跳检测间隔，设置为10000毫秒
+        heartbeatIncoming: 10000,
+        // 发送心跳检测间隔，设置为10000毫秒
+        heartbeatOutgoing: 10000,
         debug: (msg) => {
           // 只在开发环境中输出调试信息
           if (import.meta.env.DEV) {
@@ -78,8 +73,6 @@ class WebSocketService {
         },
         // 连接成功回调函数
         onConnect: (frame) => {
-          // 输出连接成功的日志信息
-          console.warn(`Connected: ${frame}`)
           // 设置连接状态为已连接
           this.connected.value = true
           // 重置重连尝试次数
@@ -91,8 +84,7 @@ class WebSocketService {
         },
         // 连接断开回调函数
         onDisconnect: () => {
-          // 输出断开连接的日志信息
-          console.warn('Disconnected')
+          console.warn('WebSocket连接已断开')
           // 设置连接状态为未连接
           this.connected.value = false
           // 重新连接
