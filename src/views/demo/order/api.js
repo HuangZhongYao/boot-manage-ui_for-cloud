@@ -13,26 +13,26 @@ export default {
    * @param {object} data - 包含新商城订单信息的对象。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
-  create: data => request.post('/order/addBusOrder', data),
+  create: data => request.post('/bm-example/order/addBusOrder', data),
 
   /**
    * 读取商城订单列表，支持分页查询。
    * @param {object} params - 查询参数，包含分页信息等。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
-  read: (params = {}) => request.get('/order/pageQueryList', { params }),
+  read: (params = {}) => request.get('/bm-example/order/pageQueryList', { params }),
 
   /**
    * 更新商城订单信息。
    * @param {object} data - 包含待更新商城订单信息的对象，必须包含商城订单ID。
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
-  update: data => request.patch(`/order/editBusOrder`, data),
+  update: data => request.patch(`/bm-example/order/editBusOrder`, data),
 
   /**
    * 删除指定ID的商城订单。
    * @param {Array} data - 待删除商城订单的ID数组。示列{ids:[1,2,3,4]}
    * @returns {Promise} - 一个Promise对象，用于处理异步请求的结果。
    */
-  delete: data => request.delete('/order/delBusOrder', { data }),
+  delete: data => request.delete('/bm-example/order/delBusOrder', { data }),
 }
