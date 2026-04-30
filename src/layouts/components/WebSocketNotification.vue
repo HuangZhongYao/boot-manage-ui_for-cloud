@@ -7,43 +7,37 @@
 <script setup>
 import { useNotification } from 'naive-ui'
 import { useUserStore } from '@/store/modules'
-import { topic, webSocketService } from '@/utils/websocket/index'
+import { topic, useWebSocketStore } from '@/store/modules/websocket'
 
 const notification = useNotification()
-
 const { userId } = useUserStore()
+const wsStore = useWebSocketStore()
 
-watch(() => webSocketService.connected.value, () => {
+onMounted(() => {
+  wsStore.initializeConnect()
+
   // 订阅个人通知消息
-  webSocketService.subscribe(`${topic.personalTopic.replace('{userId}', userId)}`, (message) => {
-    console.error('收到一条通知', message.body)
-    notification.create({
-      title: '收到一条通知',
-      content: `${message}`,
-      duration: 10000,
-      closable: true,
-      onAfterEnter: () => {
+  wsStore.subscribe(
+    topic.personalTopic.replace('{userId}', userId),
+    (message) => {
+      console.error('收到一条通知', message.body)
+      notification.create({
+        title: '收到一条通知',
+        content: `${message}`,
+        duration: 10000,
+        closable: true,
+      })
+    },
+  )
 
-      },
-      onAfterLeave: () => {
-
-      },
-    })
-  })
   // 订阅广播通知消息
-  webSocketService.subscribe(topic.notificationTopic, (message) => {
+  wsStore.subscribe(topic.notificationTopic, (message) => {
     console.error('收到一条全体通知', message.body)
     notification.create({
       title: '收到一条全体通知',
       content: `${message}`,
       duration: 10000,
       closable: true,
-      onAfterEnter: () => {
-
-      },
-      onAfterLeave: () => {
-
-      },
     })
   })
 })

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { projectName } from '@/settings.js'
 import { usePermissionStore, useRouterStore, useTabStore, useUserStore } from '@/store'
-import { webSocketService } from '@/utils/websocket/index.js'
+import { useWebSocketStore } from '@/store/modules/websocket'
 
 /**
  * 使用defineStore创建一个名为'auth'的store。
@@ -104,7 +104,7 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       this.resetLoginState()
       this.toLogin()
-      webSocketService.disconnect()
+      useWebSocketStore().disconnect()
     },
   },
   /**

@@ -1,5 +1,5 @@
 <!--------------------------------
- - @Description: WebSocket 测试页面
+ - @Description: WebSocket 测试页面（使用全局唯一实例）
  - @Author: zuuuYao
  - @LastEditor: zuuuYao
  - @LastEditTime: 2025/09/09 15:31:02
@@ -7,124 +7,103 @@
 <template>
   <h2>WebSocket 连接测试</h2>
   <div class="websocket-demo">
-
-    <!-- 连接控制 -->
-    <div class="panel">
-      <h3>连接设置</h3>
-      <div class="form-group">
-        <label>WebSocket地址:</label>
-        <input
-          v-model="websocketUrl"
-          type="text"
-          placeholder="输入WebSocket地址"
-          class="form-control"
-        >
+    <!-- 顶部连接状态栏 -->
+    <div class="top-bar">
+      <div class="conn-info">
+        <n-ellipsis class="conn-url">
+          {{ wsStore.url || '未连接' }}
+        </n-ellipsis>
+        <span class="conn-status" :class="wsStore.connected ? 'connected' : 'disconnected'">
+          {{ wsStore.connected ? '已连接' : '未连接' }}
+        </span>
+        <span class="conn-attempts">重连次数: {{ wsStore.reconnectAttempts }}</span>
       </div>
-      <div class="button-group">
-        <button
-          :disabled="isConnected || connecting"
-          class="btn btn-primary"
-          @click="connect"
-        >
-          {{ connecting ? '连接中...' : '连接' }}
+      <div class="conn-actions">
+        <button :disabled="wsStore.connected" class="btn btn-primary" @click="wsStore.initializeConnect()">
+          连接
         </button>
-        <button
-          :disabled="!isConnected"
-          class="btn btn-danger"
-          @click="disconnect"
-        >
+        <button :disabled="!wsStore.connected" class="btn btn-danger" @click="handleDisconnect">
           断开连接
         </button>
       </div>
-      <div class="status">
-        状态:
-        <span :class="isConnected ? 'status-connected' : 'status-disconnected'">
-          {{ isConnected ? '已连接' : '未连接' }}
-        </span>
-      </div>
     </div>
 
-    <!-- 消息订阅 -->
-    <div class="panel">
-      <h3>订阅消息</h3>
-      <div class="form-group">
-        <label>订阅主题:</label>
-        <input
-          v-model="subscribeTopic"
-          type="text"
-          placeholder="输入订阅主题"
-          class="form-control"
-        >
-      </div>
-      <button class="btn btn-success" @click="subscribe">
-        订阅
-      </button>
-      <div  class="subscriptions">
-        <h4>当前订阅:</h4>
-        <div
-          v-for="sub in activeSubscriptions"
-          :key="sub.destination"
-          class="subscription-item"
-        >
-          {{ sub.destination }}
-          <button
-            class="btn btn-sm btn-warning"
-            @click="unsubscribe(sub.destination)"
-          >
-            取消订阅
+    <!-- 主体区域 -->
+    <div class="main-content">
+      <!-- 左侧操作区 -->
+      <div class="sidebar">
+        <div class="panel panel-subscribe">
+          <h3>订阅主题</h3>
+          <div class="form-group">
+            <input
+              v-model="subscribeTopic"
+              type="text"
+              placeholder="订阅主题"
+              class="form-control"
+            >
+          </div>
+          <button class="btn btn-success" @click="subscribe">
+            订阅
+          </button>
+          <div v-if="wsStore.activeSubscriptions.length" class="subscriptions">
+            <h4>当前订阅:</h4>
+            <div v-for="dest in wsStore.activeSubscriptions" :key="dest" class="subscription-item">
+              <n-ellipsis class="sub-dest">{{ dest }}</n-ellipsis>
+              <button class="btn btn-sm btn-warning" @click="wsStore.unsubscribe(dest)">
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-send">
+          <h3>发送消息</h3>
+          <div class="form-group">
+            <input
+              v-model="sendDestination"
+              type="text"
+              placeholder="发送目的地主题"
+              class="form-control"
+            >
+          </div>
+          <div class="form-group">
+            <textarea
+              v-model="messageContent"
+              placeholder="消息内容"
+              class="form-control"
+              rows="2"
+            />
+          </div>
+          <button class="btn btn-primary" @click="sendMessage">
+            发送
           </button>
         </div>
       </div>
-    </div>
 
-    <!-- 发送消息 -->
-    <div class="panel">
-      <h3>发送消息</h3>
-      <div class="form-group">
-        <label>发送目的地:</label>
-        <input
-          v-model="sendDestination"
-          type="text"
-          placeholder="输入发送目的地"
-          class="form-control"
-        >
-      </div>
-      <div class="form-group">
-        <label>消息内容:</label>
-        <textarea
-          v-model="messageContent"
-          placeholder="输入消息内容"
-          class="form-control"
-          rows="3"
-        />
-      </div>
-      <button class="btn btn-primary" @click="sendMessage">
-        发送消息
-      </button>
-    </div>
-
-    <!-- 消息显示 -->
-    <div class="panel">
-      <h3>消息记录</h3>
-      <div class="message-area">
-        <div
-          v-for="(msg, index) in messages"
-          :key="index"
-          class="message" :class="[msg.type]"
-        >
-          <div class="message-header">
-            <span class="message-time">[{{ msg.time }}]</span>
-            <span class="message-type">{{ getMessageTypeText(msg.type) }}</span>
+      <!-- 右侧消息记录 -->
+      <div class="panel panel-messages">
+        <h3>消息记录</h3>
+        <div class="message-area">
+          <div
+            v-for="(msg, index) in messages"
+            :key="index"
+            class="message"
+            :class="msg.type"
+          >
+            <div class="message-header">
+              <span class="message-time">[{{ msg.time }}]</span>
+              <span class="message-type">{{ getMessageTypeText(msg.type) }}</span>
+            </div>
+            <div class="message-content">
+              {{ msg.content }}
+            </div>
+            <div v-if="msg.destination" class="message-destination">
+              主题: {{ msg.destination }}
+            </div>
           </div>
-          <div class="message-content">
-            {{ msg.content }}
+          <div v-if="messages.length === 0" class="no-messages">
+            暂无消息
           </div>
-          <div v-if="msg.destination" class="message-destination">
-            主题: {{ msg.destination }}
-          </div>
-        </div>
-        <div v-if="messages.length === 0" class="no-messages">
-          暂无消息
         </div>
       </div>
     </div>
@@ -133,103 +112,43 @@
 
 <script setup>
 import { useNotification } from 'naive-ui'
-import { topic, webSocketService } from '@/utils/websocket/index.js'
-import { useAuthStore } from '@/store'
+import { topic, useWebSocketStore } from '@/store/modules/websocket'
 
 const notification = useNotification()
-// 响应式数据
-// const websocketUrl = ref('http://localhost:8260/ws') // 直连方式
-// const websocketUrl = ref('http://localhost:8180/bm-websocket/ws') // 网关方式
-const websocketUrl = ref(import.meta.env.VITE_WEBSOCKET_ENDPOINT || 's') // 前端 /api 代理
-const connecting = ref() // 连接中状态
-const isConnected = ref(webSocketService.connected.value) // 连接状态
-const isSubscribe = ref(false) // 订阅状态
-const subscribeTopic = ref(topic.testNotificationTopic) // 订阅主题
-const sendDestination = ref('/app/testNotificationsMessages') // 发送目的地
+const wsStore = useWebSocketStore()
+
+const subscribeTopic = ref(topic.testNotificationTopic)
+const sendDestination = ref('/app/testNotificationsMessages')
 const messageContent = ref('')
 const messages = ref([])
-const activeSubscriptions = ref([])
-const authStore = useAuthStore()
-// 使用Auth Store获取访问令牌
-const { authHeaderKey, accessToken, tokenPrefix } = authStore
-// 连接WebSocket
-function connect() {
-  connecting.value = true
 
-  webSocketService.connect(
-    `${websocketUrl.value}?token=abc123&${authHeaderKey}=${tokenPrefix + accessToken}`,
-    (frame) => {
-      connecting.value = false
-      isConnected.value = true
-      addMessage('连接成功', 'info', frame)
-    },
-    (error) => {
-      connecting.value = false
-      isConnected.value = false
-      addMessage(`连接失败: ${error.message || error}`, 'error')
-    },
-  )
-}
-
-// 断开连接
-function disconnect() {
-  webSocketService.disconnect()
-  isConnected.value = false
-  activeSubscriptions.value = []
+function handleDisconnect() {
+  wsStore.disconnect()
   addMessage('连接已断开', 'info')
 }
 
-// 订阅消息
 function subscribe() {
-  if (!isConnected.value) {
+  if (!wsStore.connected) {
     addMessage('请先建立连接', 'warning')
     return
   }
 
-  const subscription = webSocketService.subscribe(subscribeTopic.value, (message) => {
+  wsStore.subscribe(subscribeTopic.value, (message) => {
     addMessage(message.body, 'received', null, subscribeTopic.value)
     notification.create({
       title: '收到一条通知',
       content: `${message.body}`,
       duration: 10000,
       closable: true,
-      onAfterEnter: () => {
-
-      },
-      onAfterLeave: () => {
-
-      },
     })
   })
 
-  if (subscription) {
-    activeSubscriptions.value.push({
-      destination: subscribeTopic.value,
-      subscription,
-    })
-    isSubscribe.value = true
-    addMessage(`已订阅: ${subscribeTopic.value}`, 'info')
-  }
+  addMessage(`已订阅: ${subscribeTopic.value}`, 'info')
 }
 
-// 取消订阅
-function unsubscribe(destination) {
-  webSocketService.unsubscribe(destination)
-  activeSubscriptions.value = activeSubscriptions.value.filter(
-    sub => sub.destination !== destination,
-  )
-  isSubscribe.value = false
-  addMessage(`已取消订阅: ${destination}`, 'info')
-}
-
-// 发送消息
 function sendMessage() {
-  if (!isConnected.value) {
+  if (!wsStore.connected) {
     addMessage('请先建立连接', 'warning')
-    return
-  }
-  if (!isSubscribe.value) {
-    addMessage('请先订阅主题', 'warning')
     return
   }
 
@@ -238,12 +157,11 @@ function sendMessage() {
     return
   }
 
-  webSocketService.send(sendDestination.value, {}, messageContent.value)
-  addMessage(`发送消息到 ${sendDestination.value}: ${messageContent.value}`, 'sent')
+  wsStore.send(sendDestination.value, {}, messageContent.value)
+  addMessage(`发送到 ${sendDestination.value}: ${messageContent.value}`, 'sent')
   messageContent.value = ''
 }
 
-// 添加消息到显示区域
 function addMessage(content, type, frame = null, destination = null) {
   messages.value.push({
     content,
@@ -253,13 +171,11 @@ function addMessage(content, type, frame = null, destination = null) {
     destination,
   })
 
-  // 限制消息数量，避免内存泄漏
   if (messages.value.length > 100) {
     messages.value.shift()
   }
 }
 
-// 获取消息类型文本
 function getMessageTypeText(type) {
   const typeMap = {
     info: '信息',
@@ -274,135 +190,229 @@ function getMessageTypeText(type) {
 
 <style scoped>
 .websocket-demo {
-  padding: 20px;
-  font-family: Arial, sans-serif;
+  padding: 16px;
+  height: calc(100vh - 60px);
   display: flex;
-  flex-wrap: wrap; /* 允许换行 */
-  gap: 20px; /* 设置间距 */
-  justify-content: flex-start; /* 左对齐 */
+  flex-direction: column;
+  gap: 12px;
 }
 
+/* ====== 顶部状态栏 ====== */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 12px 16px;
+  background: #f9f9f9;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.conn-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.conn-url {
+  max-width: 360px;
+  font-size: 13px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.conn-status {
+  font-weight: 600;
+  font-size: 13px;
+  flex-shrink: 0;
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
+.conn-status.connected {
+  color: #fff;
+  background: #28a745;
+}
+
+.conn-status.disconnected {
+  color: #fff;
+  background: #dc3545;
+}
+
+.conn-attempts {
+  font-size: 13px;
+  color: #888;
+  flex-shrink: 0;
+}
+
+.conn-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ====== 主体两栏 ====== */
+.main-content {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 12px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+/* ====== 面板通用 ====== */
 .panel {
-  width: 300px;
-  height: 100vh;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 20px;
-  margin-left: 10px;
-  margin-right: 10px;
-  margin-bottom: 20px;
-  background-color: #f9f9f9;
-  overflow-y: auto;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 16px;
+  background: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .panel h3 {
-  margin-top: 0;
+  margin: 0 0 12px;
   color: #333;
+  font-size: 15px;
+  flex-shrink: 0;
 }
 
+.panel-messages {
+  flex: 1;
+  min-height: 0;
+}
+
+/* 订阅面板允许内部列表滚动，发送面板保持紧凑 */
+.panel-subscribe {
+  flex: 1;
+  min-height: 0;
+}
+
+.panel-send {
+  flex-shrink: 0;
+}
+
+/* ====== 表单控件 ====== */
 .form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 .form-control {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
   border-radius: 4px;
   box-sizing: border-box;
+  font-size: 13px;
+  background: #fff;
 }
 
-.button-group {
-  margin: 15px 0;
+textarea.form-control {
+  resize: vertical;
 }
 
+/* ====== 按钮 ====== */
 .btn {
-  padding: 8px 16px;
+  padding: 7px 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  margin-right: 10px;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .btn:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .btn-primary {
-  background-color: #007bff;
-  color: white;
+  background-color: #2080f0;
+  color: #fff;
 }
 
 .btn-success {
-  background-color: #28a745;
-  color: white;
+  background-color: #18a058;
+  color: #fff;
 }
 
 .btn-danger {
-  background-color: #dc3545;
-  color: white;
+  background-color: #d03050;
+  color: #fff;
 }
 
 .btn-warning {
-  background-color: #ffc107;
-  color: #212529;
-  padding: 4px 8px;
-  font-size: 12px;
+  background-color: #f0a020;
+  color: #fff;
 }
 
 .btn-sm {
-  padding: 4px 8px;
+  padding: 3px 10px;
   font-size: 12px;
 }
 
-.status {
-  margin-top: 10px;
-  font-weight: bold;
-}
-
-.status-connected {
-  color: #28a745;
-}
-
-.status-disconnected {
-  color: #dc3545;
-}
-
+/* ====== 订阅列表 ====== */
 .subscriptions {
-  margin-top: 15px;
+  margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #e5e5e5;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.subscriptions h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #666;
 }
 
 .subscription-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 0;
-  border-bottom: 1px solid #eee;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 8px;
 }
 
+.sub-dest {
+  font-size: 12px;
+  color: #555;
+  min-width: 0;
+}
+
+/* ====== 消息区域 ====== */
 .message-area {
-  word-wrap: break-word;
-  word-break: break-word;
-  white-space: normal;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   border: 1px solid #eee;
   padding: 10px;
-  background-color: white;
+  background: #fff;
+  border-radius: 4px;
 }
 
 .message {
-  margin-bottom: 10px;
-  padding: 8px;
+  margin-bottom: 8px;
+  padding: 8px 10px;
   border-radius: 4px;
   border-left: 4px solid #ccc;
+  font-size: 13px;
 }
 
 .message.info {
@@ -433,31 +443,61 @@ function getMessageTypeText(type) {
 .message-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   font-size: 12px;
 }
 
 .message-time {
-  color: #666;
+  color: #888;
 }
 
 .message-type {
-  font-weight: bold;
+  font-weight: 600;
 }
 
 .message-content {
-  margin-bottom: 5px;
+  margin-bottom: 4px;
+  word-break: break-all;
 }
 
 .message-destination {
-  font-size: 12px;
-  color: #666;
+  font-size: 11px;
+  color: #999;
+  word-break: break-all;
 }
 
 .no-messages {
   text-align: center;
-  color: #999;
-  font-style: italic;
-  padding: 20px;
+  color: #bbb;
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+/* ====== 小屏适配 ====== */
+@media (max-width: 768px) {
+  .websocket-demo {
+    height: auto;
+  }
+
+  .top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .conn-info {
+    gap: 8px;
+  }
+
+  .conn-url {
+    max-width: 100%;
+  }
+
+  .main-content {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-messages {
+    max-height: 50vh;
+  }
 }
 </style>

@@ -7,7 +7,7 @@
  **********************************/
 
 import { getActivePinia } from 'pinia'
-import { webSocketService } from '@/utils/websocket/index.js'
+import { useWebSocketStore } from '@/store/modules/websocket'
 import { useAuthStore } from '@/store/index.js'
 
 export function createPageLoadingGuard(router) {
@@ -21,12 +21,11 @@ export function createPageLoadingGuard(router) {
       // 检查 Pinia 是否已激活
       if (getActivePinia()) {
         try {
-          // 获取访问令牌
           const { authHeaderKey } = useAuthStore()
+          const wsStore = useWebSocketStore()
 
-          // 如果是已登录状态，且为连接websocket则初始化连接
-          if (authHeaderKey && !webSocketService.isConnected()) {
-            webSocketService.initializeConnect()
+          if (authHeaderKey && !wsStore.isConnected) {
+            wsStore.initializeConnect()
           }
         }
         catch (error) {
