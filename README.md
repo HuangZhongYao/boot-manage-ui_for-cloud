@@ -22,7 +22,7 @@ Boot Admin是一款极简风格的后台管理模板。
 
 ## 在线体验
 
-访问地址: http://boot-admin.zuuuyao.asia
+访问地址: http://boot-manage.zuuuyao.asia
 账号：admin
 密码：123456
 

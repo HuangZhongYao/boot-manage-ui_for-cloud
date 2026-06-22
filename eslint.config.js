@@ -25,6 +25,7 @@ export default antfu({
     'vue/block-order': 'off',
     '@typescript-eslint/no-this-alias': 'off',
     'prefer-promise-reject-errors': 'off',
+    'antfu/if-newline': 'off',
   },
   languageOptions: {
     globals: {

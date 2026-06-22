@@ -2,7 +2,7 @@
  * 项目名
  * @type {string}
  */
-export const projectName = 'boot-admin'
+export const projectName = 'boot-manage'
 
 /**
  * 默认的布局样式。 empty|full|normal|simple
