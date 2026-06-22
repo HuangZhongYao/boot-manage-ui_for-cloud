@@ -84,7 +84,7 @@ export function setupInterceptors(axiosInstance) {
         const { refreshAuthHeaderKey, refreshToken, tokenPrefix } = authStore
         try {
           const res = await api.refreshAccessToken({
-            needTip: false,
+            needTip: true,
             isRefreshTokenRequest: true,
             headers: {
               [refreshAuthHeaderKey]: tokenPrefix + refreshToken,
