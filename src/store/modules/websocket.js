@@ -95,28 +95,35 @@ export const useWebSocketStore = defineStore('websocket', {
 
     /**
      * 订阅消息目的地（自动跟踪，重连后自动恢复）
+     * 同一 destination 已订阅时只更新回调，不会重复向 broker 订阅
      */
     subscribe(destination, callback) {
       const existing = this.subscriptionCallbacks.find(s => s.destination === destination)
       if (existing) {
         existing.callback = callback
+        return existing.subscriptionId || null
       }
-      else {
-        this.subscriptionCallbacks.push({ destination, callback })
-      }
+
+      const item = { destination, callback, subscriptionId: null }
       if (stompClient?.connected) {
-        return stompClient.subscribe(destination, callback)
+        item.subscriptionId = stompClient.subscribe(destination, callback).id
       }
-      return null
+      this.subscriptionCallbacks.push(item)
+      return item.subscriptionId
     },
 
     /**
-     * 取消订阅
+     * 取消订阅（同时向 broker 发送 UNSUBSCRIBE）
      */
     unsubscribe(destination) {
-      this.subscriptionCallbacks = this.subscriptionCallbacks.filter(
-        s => s.destination !== destination,
-      )
+      const index = this.subscriptionCallbacks.findIndex(s => s.destination === destination)
+      if (index === -1) return
+
+      const { subscriptionId } = this.subscriptionCallbacks[index]
+      if (subscriptionId && stompClient?.connected) {
+        stompClient.unsubscribe(subscriptionId)
+      }
+      this.subscriptionCallbacks.splice(index, 1)
     },
 
     /**
@@ -208,9 +215,11 @@ export const useWebSocketStore = defineStore('websocket', {
      * 重连后恢复所有已跟踪的订阅
      */
     _restoreSubscriptions() {
-      this.subscriptionCallbacks.forEach(({ destination, callback }) => {
+      this.subscriptionCallbacks.forEach(({ destination, callback }, index) => {
         if (stompClient?.connected) {
-          stompClient.subscribe(destination, callback)
+          this.subscriptionCallbacks[index].subscriptionId = stompClient
+            .subscribe(destination, callback)
+            .id
         }
       })
     },

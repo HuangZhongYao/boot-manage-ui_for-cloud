@@ -133,8 +133,19 @@ function subscribe() {
     return
   }
 
-  wsStore.subscribe(subscribeTopic.value, (message) => {
-    addMessage(message.body, 'received', null, subscribeTopic.value)
+  const dest = subscribeTopic.value.trim()
+  if (!dest) {
+    addMessage('请输入订阅主题', 'warning')
+    return
+  }
+  if (wsStore.activeSubscriptions.includes(dest)) {
+    addMessage(`已订阅过: ${dest}`, 'warning')
+    return
+  }
+
+  // 订阅时固定 dest，避免输入框变化导致回调里显示的主题与实际来源不符
+  wsStore.subscribe(dest, (message) => {
+    addMessage(message.body, 'received', dest)
     notification.create({
       title: '收到一条通知',
       content: `${message.body}`,
@@ -143,7 +154,7 @@ function subscribe() {
     })
   })
 
-  addMessage(`已订阅: ${subscribeTopic.value}`, 'info')
+  addMessage(`已订阅: ${dest}`, 'info')
 }
 
 function sendMessage() {
@@ -152,22 +163,27 @@ function sendMessage() {
     return
   }
 
+  const dest = sendDestination.value.trim()
+  if (!dest) {
+    addMessage('请输入发送目的地主题', 'warning')
+    return
+  }
+
   if (!messageContent.value) {
     addMessage('请输入消息内容', 'warning')
     return
   }
 
-  wsStore.send(sendDestination.value, {}, messageContent.value)
-  addMessage(`发送到 ${sendDestination.value}: ${messageContent.value}`, 'sent')
+  wsStore.send(dest, {}, messageContent.value)
+  addMessage(`发送到 ${dest}: ${messageContent.value}`, 'sent')
   messageContent.value = ''
 }
 
-function addMessage(content, type, frame = null, destination = null) {
+function addMessage(content, type, destination = null) {
   messages.value.push({
     content,
     type,
     time: new Date().toLocaleTimeString(),
-    frame,
     destination,
   })
 
