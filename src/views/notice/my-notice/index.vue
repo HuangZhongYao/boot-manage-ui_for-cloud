@@ -18,7 +18,6 @@ const totalNum = ref(0)
 // 类型映射（可根据后端字段自适应）
 function getTypeInfo(item) {
   const label = item.typeName || item.type || item.category || '系统'
-  // 简单的类型到颜色映射，可继续扩展
   const map = {
     SYSTEM: 'success',
     公告: 'info',
@@ -76,20 +75,17 @@ async function handleQuery() {
     }
     const res = await api.read(params)
 
-    // 列表数据：兼容后端分页对象 或 直接数组
     listData.value = (res.result?.records || res.result).map(item => ({
       ...item,
-      _visible: true, // 用于控制删除动画的显示/隐藏
+      _visible: true,
     }))
 
-    // 分页信息
     pagination.itemCount = res.result.total ?? res.result.length
     pagination.pages = res.result.pages ?? 1
     totalNum.value = pagination.itemCount
 
     onUpdateItemCount()
   }
-  // eslint-disable-next-line unused-imports/no-unused-vars
   catch (error) {
     listData.value = []
     pagination.itemCount = 0
@@ -106,7 +102,6 @@ function readRecords(data, row) {
   for (const item of listData.value) {
     if (item.id === row.id) {
       item.readState = true
-      // 执行标记已读
       api.readNotificationRecords(data).then((res) => {
         item.readState = res.result
         if (res.result) {
@@ -125,10 +120,8 @@ function readRecords(data, row) {
  * 处理删除（带动画）
  */
 function handleDelete(item) {
-  // 1. 先隐藏该项，触发淡出动画
   item._visible = false
 
-  // 2. 延迟执行真正的删除请求
   setTimeout(() => {
     api.delNotificationRecord({ ids: [item.id], delAll: false })
       .then((res) => {
@@ -146,13 +139,11 @@ function handleDelete(item) {
           $message.warning('操作失败')
         }
       })
-      // eslint-disable-next-line node/handle-callback-err
       .catch((err) => {
         $message.warning('操作失败')
-        // 可在此处重新显示该条目，或者提示用户
         item._visible = true
       })
-  }, 300) // 动画时长，与 CSS 中 transition 保持一致
+  }, 300)
 }
 
 function onUpdateItemCount() {
@@ -168,7 +159,7 @@ function onUpdateItemCount() {
   <n-empty v-else-if="showEmpty" description="暂无通知" class="py-10" />
 
   <!-- 通知列表 -->
-  <n-list v-else clickable bordered hoverable class="border-none">
+  <n-list v-else clickable bordered hoverable class="border-none overflow-hidden w-full">
     <Transition
       v-for="item in listData"
       :key="item.id"
@@ -181,8 +172,8 @@ function onUpdateItemCount() {
         class="group my-notice-item rounded-8 px-2 py-1"
       >
         <div class="notice-row">
-          <!-- 图标列 -->
-          <div class="flex items-center justify-center">
+          <!-- 图标列：固定 40px -->
+          <div class="icon-col">
             <n-badge :value="item.readState ? 0 : 1" :dot="!item.readState">
               <n-avatar size="small" class="bg-primary:10 text-primary">
                 <i class="i-fe:bell" />
@@ -190,50 +181,41 @@ function onUpdateItemCount() {
             </n-badge>
           </div>
 
-          <!-- 标题与时间（自适应） -->
+          <!-- 标题与时间（强制收缩区） -->
           <div class="content-col">
-            <div class="title line-height-24">
-              <n-ellipsis>{{ item.title }}</n-ellipsis>
+            <div class="title" :title="item.title">
+              {{ item.title }}
             </div>
-            <div class="meta flex items-center gap-2 text-12 color-#999">
-              <n-time :time="item.createdTime" />
+            <div class="meta flex items-center gap-2 text-12 color-#999 mt-2px overflow-hidden whitespace-nowrap">
+              <n-time :time="item.createdTime" class="shrink-0" />
               <n-tag size="small" round :type="getTypeInfo(item).type" class="origin-left scale-85 opacity-90">
-                <n-ellipsis line-clamp="1">
+                <span class="block truncate max-w-80px">
                   {{ getTypeInfo(item).label }}
-                </n-ellipsis>
+                </span>
               </n-tag>
             </div>
           </div>
 
-          <!-- 操作列 -->
+          <!-- 操作列：稍微加宽到 40px，上下排列，绿勾红叉 -->
           <div class="action-col">
-            <n-space
-              class="visibility-hidden group-hover:visibility-visible opacity-0 transition-all duration-500 group-hover:opacity-100"
-              :size="4"
+            <div
+              v-if="!item.readState"
+              class="action-buttons visibility-hidden group-hover:visibility-visible opacity-0 transition-all duration-300 group-hover:opacity-100 flex flex-col items-center justify-center gap-1.5"
             >
               <n-tooltip trigger="hover">
                 <template #trigger>
-                  <n-button
-
-                    round quaternary
-                    @click="readRecords({ ids: [item.id], readAll: false }, item)"
-                  >
+                  <n-button round quaternary size="tiny" type="success" @click="readRecords({ ids: [item.id], readAll: false }, item)">
                     <template #icon>
                       <i class="i-fe:check" />
                     </template>
                   </n-button>
                 </template>
-                标记已读
+                已读
               </n-tooltip>
 
               <n-tooltip trigger="hover">
                 <template #trigger>
-                  <n-button
-                    quaternary
-                    round
-                    type="error"
-                    @click="handleDelete(item)"
-                  >
+                  <n-button round quaternary size="tiny" type="error" @click="handleDelete(item)">
                     <template #icon>
                       <i class="i-fe:x" />
                     </template>
@@ -241,7 +223,7 @@ function onUpdateItemCount() {
                 </template>
                 删除
               </n-tooltip>
-            </n-space>
+            </div>
           </div>
         </div>
       </n-list-item>
@@ -272,19 +254,20 @@ function onUpdateItemCount() {
 </template>
 
 <style scoped>
+/* 强制清除列表项默认可能带来的溢出 */
+:deep(.n-list-item) {
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* 淡出动画 + 向上滑动 */
 .fade-enter-active,
 .fade-leave-active {
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
-
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
+.fade-enter-from,
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
@@ -292,9 +275,10 @@ function onUpdateItemCount() {
 
 /* 卡片与列表的细节样式 */
 .my-notice-item {
-  transition:
-    box-shadow 0.25s ease,
-    background-color 0.25s ease;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  transition: box-shadow 0.25s ease, background-color 0.25s ease;
 }
 
 .my-notice-item:hover {
@@ -302,20 +286,53 @@ function onUpdateItemCount() {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
-/* 网格对齐：icon 40px / type 72px / content 自适应 / action 92px */
+/* 外层弹性布局 */
 .notice-row {
-  display: grid;
-  grid-template-columns: 40px 1fr 92px;
-  align-items: center;
-  gap: 8px;
-}
-
-.content-col .title :deep(.n-ellipsis) {
-  font-weight: 600;
-}
-
-.action-col {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  gap: 12px;
+}
+
+/* 左侧图标固定宽度 */
+.icon-col {
+  width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 中间内容区：宽度设0加上flex:1，实现完美自适应收缩 */
+.content-col {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 标题单行截断 */
+.content-col .title {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+/* 右侧操作区：稍微加宽，保证上下按钮排列时视觉居中 */
+.action-col {
+  width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 </style>

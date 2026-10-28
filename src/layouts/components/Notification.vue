@@ -35,7 +35,7 @@ onMounted(() => {
     消息通知
   </n-tooltip>
   <!-- 通知详情抽屉 -->
-  <n-drawer v-model:show="showMyNotice" width="50vh" close-on-esc placement="right" resizable>
+  <n-drawer v-model:show="showMyNotice" width="70vh" close-on-esc placement="right" resizable>
     <n-drawer-content closable>
       <template #header>
         <div class="flex items-center">

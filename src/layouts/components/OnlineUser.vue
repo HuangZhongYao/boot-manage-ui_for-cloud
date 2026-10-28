@@ -64,7 +64,7 @@ function getOnlineUser() {
               </n-space>
             </template>
             <template #footer>
-              最后登录时间：{{ item.lastLoginTime }}
+              登录时间：{{ item.lastLoginTime }}
             </template>
           </n-thing>
           <template #suffix>

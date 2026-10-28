@@ -4,3 +4,5 @@ dist
 stats.html
 .vscode
 package-lock.json
+.idea
+.vscode
